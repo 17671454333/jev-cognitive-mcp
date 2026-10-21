@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-cognitive-mcp"
+version = "0.3.0"
+description = "3+1 Cognitive Hierarchy Toolkit & Model Context Protocol (MCP) Server for Agentic Coding: Pre-Tool Security Guardrails, Dynamic Model Routing, Semantic Reranking, and Completion Verification."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+    { name = "jev-cognitive-mcp maintainers" }
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "codex",
+    "security-guardrails",
+    "model-router",
+    "system1-system2",
+    "llm-verification"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.scripts]
+jev-kit = "jev_kit.__main__:main"
+jev-mcp = "jev_kit.mcp_server:run_stdio_server"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["jev_kit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v"
