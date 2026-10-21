@@ -35,9 +35,14 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertTrue(pipe_verdict.is_rce_or_exfil)
 
     def test_layer0_reflex_rejects_raw_credentials(self):
-        with self.assertRaises(JevIntegrationError) as ctx:
-            local_reflex_screen("export OPENAI_API_KEY=sk-proj-1234567890abcdefghijklmnop")
-        self.assertEqual(ctx.exception.code, "SENSITIVE_INPUT_REJECTED")
+        for secret_cmd in [
+            "export OPENAI_API_KEY=sk-proj-1234567890abcdefghijklmnop",
+            "git clone https://admin:SuperSecret123@internal.example.com/repo.git",
+            "curl -H 'PRIVATE-TOKEN: glpat-1234567890abcdef1234' https://gitlab.example.com",
+        ]:
+            with self.assertRaises(JevIntegrationError) as ctx:
+                local_reflex_screen(secret_cmd)
+            self.assertEqual(ctx.exception.code, "SENSITIVE_INPUT_REJECTED")
 
     def test_layer0_reflex_passes_normal_command(self):
         self.assertIsNone(local_reflex_screen("pytest tests/ -v"))
