@@ -45,6 +45,9 @@ class GuardVerdict:
 _SENSITIVE_CREDENTIAL_PATTERN = re.compile(
     r"(?i)\bsk-(?:or-|proj-)?[A-Za-z0-9_-]{12,}"
     r"|\bgh[pousr]_[A-Za-z0-9_]{20,}"
+    r"|\bglpat-[A-Za-z0-9_-]{16,}"
+    r"|\bxox[bpas]-[A-Za-z0-9-]{10,}"
+    r"|\b[a-z][a-z0-9+.-]{1,20}://[^/\s:@]{1,64}:[^@\s/]{4,128}@"
     r"|\bBearer\s+[A-Za-z0-9._~+/-]{12,}"
     r"|(?:api[_-]?key|password|secret|access[_-]?token)\s*[=:]\s*['\"][^'\"]+['\"]"
 )
