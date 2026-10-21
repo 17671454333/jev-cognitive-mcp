@@ -22,6 +22,7 @@ from jev_kit import (
     arbitrate_escalation,
 )
 from jev_kit.__main__ import generate_mcp_config
+from jev_kit.guard import run_layer0_benchmark
 from jev_kit.mcp_server import handle_mcp_request
 
 
@@ -274,6 +275,13 @@ class TestJevCognitiveMcp(unittest.TestCase):
         parsed = json.loads(json_out)
         self.assertEqual(parsed["mcpServers"]["jev-cognitive"]["command"], "jev-mcp")
         self.assertEqual(parsed["mcpServers"]["jev-cognitive"]["args"], [])
+
+    def test_layer0_jsonl_replay_benchmark_accuracy(self):
+        summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
+        self.assertEqual(summary["total"], 9)
+        self.assertEqual(summary["matched"], 9)
+        self.assertEqual(summary["accuracy"], 1.0)
+        self.assertEqual(summary["mismatches"], [])
 
 
 if __name__ == "__main__":
