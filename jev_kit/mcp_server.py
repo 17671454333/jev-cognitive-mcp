@@ -1,13 +1,16 @@
 """
 Model Context Protocol (MCP) JSON-RPC 2.0 Stdio Server for JevKit.
 
-Exposes 5 tools to MCP-compatible coding agents (OpenAI Codex CLI, Claude Code,
-Cursor, Antigravity):
-- jev_guard: Pre-tool command safety screening (Layer-0 reflex + System-1 JEV)
-- jev_route: Dynamic task complexity & model tier routing
-- jev_verify: Unbiased completion & acceptance gate
-- jev_rerank: Bounded semantic candidate reranking
-- jev_arbitrate: 5-factor Meta-Controller cognitive escalation arbitrator
+Exposes 5 advisory tools to MCP-compatible coding agents (OpenAI Codex CLI,
+Claude Code, Cursor):
+- jev_guard: Advisory pre-tool command risk screening (Layer-0 deterministic reflex + optional System-1 JEV)
+- jev_route: Advisory task complexity & model tier routing
+- jev_verify: Advisory review of caller-supplied change descriptions and test evidence
+- jev_rerank: Bounded semantic candidate ranking
+- jev_arbitrate: Deterministic 5-factor Meta-Controller escalation recommendation
+
+Note: All tool outputs are advisory recommendations. Actual command execution,
+blocking, and human-approval gates remain enforced by the host runtime.
 """
 
 import json
@@ -24,7 +27,7 @@ from .controller import arbitrate_escalation, ControllerSignals
 MCP_TOOLS = [
     {
         "name": "jev_guard",
-        "description": "Screen shell command safety before execution using Layer-0 deterministic DLP/reflex rules and System-1 probabilistic risk assessment.",
+        "description": "Provide advisory risk screening for a shell command using Layer-0 deterministic regex rules and (unless reflex_only=true) System-1 probabilistic evaluation. Does not intercept host execution.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -33,7 +36,7 @@ MCP_TOOLS = [
                 "reflex_only": {
                     "type": "boolean",
                     "default": False,
-                    "description": "If true, run only Layer-0 deterministic screening (0 model tokens).",
+                    "description": "If true, run only offline Layer-0 deterministic screening (requires no external JevBridge runtime).",
                 },
             },
             "required": ["command"],
@@ -41,7 +44,7 @@ MCP_TOOLS = [
     },
     {
         "name": "jev_route",
-        "description": "Evaluate coding task complexity and route to FAST, STANDARD, or DEEP_REASONING model tiers.",
+        "description": "Provide advisory task complexity and model tier recommendation (requires configured JevBridge runtime).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -53,20 +56,20 @@ MCP_TOOLS = [
     },
     {
         "name": "jev_verify",
-        "description": "Evaluate whether implemented changes and test outputs satisfy the original task specification.",
+        "description": "Review caller-supplied task specification, change summary, and test logs for potential evidence gaps (does not run tests or read git diffs directly; requires JevBridge runtime).",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "task_spec": {"type": "string", "description": "Original task requirements."},
-                "implemented_changes": {"type": "string", "description": "Summary of diffs or artifacts."},
-                "test_results": {"type": "string", "description": "Optional test runner output."},
+                "implemented_changes": {"type": "string", "description": "Caller-supplied summary of diffs or artifacts."},
+                "test_results": {"type": "string", "description": "Optional caller-supplied test runner output."},
             },
             "required": ["task_spec", "implemented_changes"],
         },
     },
     {
         "name": "jev_rerank",
-        "description": "Semantically rank up to 96 candidate items against a query in deterministic batches of 12.",
+        "description": "Rank up to 96 candidate text items against a query in batches of 12 (requires JevBridge runtime).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -83,7 +86,7 @@ MCP_TOOLS = [
     },
     {
         "name": "jev_arbitrate",
-        "description": "Run the 5-factor Meta-Controller to decide between Layer-0 Reflex, System-1 Intuition, System-2 Deep Reasoning, or Human Gate.",
+        "description": "Run the offline deterministic 5-factor Meta-Controller to recommend Layer-0 Reflex, System-1 Intuition, System-2 Deep Reasoning, or Human Gate.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -111,7 +114,6 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     params = request.get("params") or {}
 
     if req_id is None:
-        # JSON-RPC notification (e.g. notifications/initialized)
         return None
 
     if method == "initialize":
@@ -175,11 +177,12 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         if args.get("reflex_only"):
             verdict = local_reflex_screen(cmd, ctx)
             if verdict is None:
-                return {"ok": True, "action": "pass_reflex", "layer0_triggered": False}
+                return {"ok": True, "advisory": True, "action": "pass_reflex", "layer0_triggered": False}
         else:
             verdict = check_command_safety(cmd, ctx)
         return {
             "ok": True,
+            "advisory": True,
             "action": verdict.action.value,
             "is_destructive": verdict.is_destructive,
             "destructive_prob": verdict.destructive_prob,
@@ -197,6 +200,7 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         verdict = route_task(args.get("task_description", ""), args.get("context"))
         return {
             "ok": True,
+            "advisory": True,
             "tier": verdict.tier.value,
             "complexity_score": verdict.complexity_score,
             "requires_architecture": verdict.requires_architecture,
@@ -214,6 +218,7 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         )
         return {
             "ok": True,
+            "advisory": True,
             "status": verdict.status.value,
             "is_satisfied": verdict.is_satisfied,
             "satisfaction_prob": verdict.satisfaction_prob,
@@ -229,6 +234,7 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         scored = rerank(args.get("query", ""), args.get("items", []), top_k=args.get("top_k"))
         return {
             "ok": True,
+            "advisory": True,
             "results": [
                 {
                     "index": item.index,
@@ -254,6 +260,7 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         decision = arbitrate_escalation(signals)
         return {
             "ok": True,
+            "advisory": True,
             "target_layer": decision.target_layer.value,
             "escalate_to_system2": decision.escalate_to_system2,
             "require_human_approval": decision.require_human_approval,

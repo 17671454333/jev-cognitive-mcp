@@ -6,20 +6,23 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
-**面向自主编码智能体（OpenAI Codex CLI、Claude Code、Cursor、Antigravity）的 3+1 认知分层工具包与 MCP（Model Context Protocol）安全服务端。**
+**面向编码智能体（OpenAI Codex CLI、Claude Code、Cursor、Antigravity）的 3+1 认知分层辅助工具包与 MCP（Model Context Protocol）服务端。**
 
 ---
 
-## 核心解决的问题
+## 核心定位与设计边界
 
-在自主编码与开源维护工作流（PR 审查、Issue 分类、自动化测试、终端命令执行）中，如果将所有判断都交给重度推理大模型（System 2），不仅延迟高、Token 消耗巨大，还容易出现“自我宣布完成”或误执行高危命令。
+在自主编码与开源维护工作流中，`jev-cognitive-mcp` 提供**辅助性（Advisory）**风险初筛、模型层级路由、五维元认知仲裁与完成度复核信号。实际命令拦截、沙箱隔离与人工确认门禁（Human Gate）由宿主智能体执行。
 
-`jev-cognitive-mcp` 构建了严密的 **3+1 认知分层闭环**：
-
-1. **Layer 0（确定性反射层，`<1ms` / `0 Token`）**：本地正则 DLP 凭据拦截（防止 `sk-*`、`ghp_*`、`Bearer` 外泄）、破坏性命令与远程管道熔断（`rm -rf /`、`DROP DATABASE`、`curl | bash`）、严格 Schema 校验。
-2. **System 1（快速直觉层 / JEV）**：亚秒级概率分布评估，负责命令风险初筛（`jev_guard`）、任务复杂度与模型路由（`jev_route`）、候选片段重排序（`jev_rerank`）与交付验收门禁（`jev_verify`）。
-3. **System 2（深度推理层 / 宿主主模型）**：专注复杂因果推理、跨模块架构设计与疑难 Bug 修复。
-4. **Meta-Controller（五维元认知仲裁中枢）**：基于 **置信度 (Confidence)**、**风险度 (Risk)**、**可逆性 (Reversibility)**、**预期价值 (Value)** 与 **算力成本 (Cost)** 五项量化指标，确定性地裁决停留层级或触发人工审批门禁（Human Gate）。
+1. **Layer 0（确定性反射层，本地离线 / 0 Token）**：
+   - 在任何外部桥接调用前，对序列化输入执行本地正则 DLP 敏感凭据拦截（涵盖带引号或不带引号的 `password=`、`secret=`、`api_key=`、`token=`，以及 `sk-*`、`ghp_*`、`glpat-*`、`AKIA*`、`Bearer`、PEM 私钥与 URL 凭据），触发 `SENSITIVE_INPUT_REJECTED`，确保敏感凭据不会进入桥接负载。
+   - 识别高危破坏性命令（如 `rm -rf /`、`rm -rf -- /`、PowerShell `Remove-Item -Recurse -Force`、`rd /s /q`、`mkfs`、`DROP DATABASE` 及 `curl | bash` 远程执行管道）。
+2. **System 1（概率直觉层 / 需外部 `JevBridge`）**：
+   - 通过本地 `JevBridge`（由环境变量 `JEV_BRIDGE_DIR` 指定目录，未安装时显式返回 `BRIDGE_MISSING`）执行单次概率评估，包含 `jev_guard`（命令风险评估）、`jev_route`（模型层级路由）、`jev_rerank`（候选片段重排序）与 `jev_verify`（基于调用方传入的任务说明、变更摘要与测试结果进行完成度评估，不直接读取 Git 仓库或执行测试）。
+3. **System 2（深度推理层 / 宿主主模型）**：
+   - 由宿主大模型（如 `o3`、`codex-1`）处理复杂架构重构与跨模块因果推理。
+4. **Meta-Controller（五维元认知仲裁，本地离线 / 0 Token）**：
+   - `jev_arbitrate` 基于 **置信度 (Confidence)**、**风险度 (Risk)**、**可逆性 (Reversibility)**、**预期价值 (Value)** 与 **成本压力 (Cost Pressure)** 五项量化指标计算升级效用，对不可逆高风险操作建议触发人工确认（`human_gate`）。
 
 ---
 
@@ -29,10 +32,22 @@
 git clone https://github.com/17671454333/jev-cognitive-mcp.git
 cd jev-cognitive-mcp
 pip install -e ".[dev]"
-pytest -v
+python -m unittest discover -s tests -v
 ```
 
-### MCP 客户端接入
+### 1. 接入 OpenAI Codex CLI (`~/.codex/config.toml`)
+
+运行 `jev-kit init-codex --format toml` 生成配置并写入 `~/.codex/config.toml`：
+
+```toml
+[mcp_servers.jev_cognitive]
+command = "jev-mcp"
+args = []
+```
+
+### 2. 接入标准 JSON MCP 客户端
+
+运行 `jev-kit init-codex --format json` 生成配置：
 
 ```json
 {

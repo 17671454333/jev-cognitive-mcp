@@ -2,20 +2,50 @@
 
 One invocation makes at most one request. Errors, partial answers, and missing
 confidence are explicit; they are never silently coerced into safe decisions.
+All payloads are screened by `contains_sensitive_credential` before leaving the
+process so known secret shapes (quoted or unquoted assignments, tokens, PEM blocks,
+and URL-embedded credentials) are rejected prior to bridge invocation.
 """
-import importlib.util
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Union
 
 DEFAULT_MODEL = "~typesafe/jev-latest"
+
+# Chokepoint DLP pattern shared by Layer-0 guard screening and pre-egress call_jev.
+# Matches:
+# - Known token prefixes (sk-*, ghp_*, gho_*, ghs_*, ghr_*, github_pat_*, glpat-*, xoxb/p/a/s-*, AKIA*, npm_*)
+# - PEM private key blocks
+# - URL-embedded user:password@host credentials
+# - Authorization: Bearer / Basic headers
+# - Quoted OR unquoted secret/password/token/api_key assignments (excluding placeholders like $VAR, <placeholder>, [REDACTED], ****)
+_SENSITIVE_CREDENTIAL_PATTERN = re.compile(
+    r"(?i)"
+    r"\bsk-(?:or-|proj-)?[A-Za-z0-9_-]{12,}"
+    r"|\b(?:gh[pousr]|github_pat)_[A-Za-z0-9_]{16,}"
+    r"|\bglpat-[A-Za-z0-9_-]{12,}"
+    r"|\bxox[bpas]-[A-Za-z0-9-]{10,}"
+    r"|\bAKIA[0-9A-Z]{16,}\b"
+    r"|\bnpm_[A-Za-z0-9]{16,}\b"
+    r"|-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+|ENCRYPTED\s+)?PRIVATE\s+KEY-----"
+    r"|\b[a-z][a-z0-9+.-]{1,20}://[^/\s:@]{1,64}:[^@\s/]{4,128}@"
+    r"|\b(?:Bearer|Basic)\s+[A-Za-z0-9._~+/=-]{10,}"
+    r"|\b(?:(?:[A-Za-z0-9_]*?(?:api[_-]?key|passwd|password|secret|access[_-]?token|auth[_-]?token|private[_-]?key|client[_-]?secret))|token)[ \t]*[=:][ \t]*['\"]?(?!(?:\$[A-Za-z_{]|<[^>]+>|\[REDACTED|\*{3,}|true\b|false\b|null\b|none\b))[^\s'\"`;,&|]{6,}['\"]?"
+)
+
+
+def contains_sensitive_credential(text: str) -> bool:
+    """Return True if text matches known literal credential or secret assignment patterns."""
+    if not isinstance(text, str) or not text:
+        return False
+    return bool(_SENSITIVE_CREDENTIAL_PATTERN.search(text))
 
 
 def _resolve_bridge_dir() -> Path:
@@ -292,7 +322,8 @@ def call_jev(
     """Send minimal authorized input through JevBridge, at most once per call.
 
     Explicit key injection is rejected by design: only the isolated bridge
-    controls credential access.
+    controls credential access. All serialized state is checked against
+    `contains_sensitive_credential` prior to bridge invocation.
     """
     if api_key is not None:
         raise JevIntegrationError("DIRECT_CREDENTIALS_DISABLED")
@@ -302,6 +333,7 @@ def call_jev(
     if type(state) not in (str, dict, list) or (isinstance(state, str) and not state.strip()):
         raise JevIntegrationError("INPUT_INVALID")
     try:
+        state_serialized = json.dumps(state, ensure_ascii=False, allow_nan=False)
         payload = json.dumps(
             {"state": state, "questions": questions},
             ensure_ascii=False,
@@ -311,6 +343,8 @@ def call_jev(
         raise JevIntegrationError("INPUT_INVALID") from None
     if len(payload) > 262144:
         raise JevIntegrationError("REQUEST_TOO_LARGE")
+    if contains_sensitive_credential(state_serialized):
+        raise JevIntegrationError("SENSITIVE_INPUT_REJECTED")
 
     sent_questions = json.loads(payload)["questions"]
     invoker = transport if transport is not None else _invoke_bridge

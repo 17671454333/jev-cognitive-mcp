@@ -1,17 +1,18 @@
 """
-JevKit (jev-cognitive-mcp) - 3+1 Cognitive Architecture & MCP Security Toolkit
+JevKit (jev-cognitive-mcp) - 3+1 Cognitive Architecture & Advisory MCP Toolkit
 
-Implements a structured 3+1 cognitive hierarchy for coding agents (Codex, Claude Code, Antigravity):
-- Layer 0 (Deterministic Reflex): Regex DLP screening, allowlist/denylist, schema & bounds enforcement
-- System 1 (Fast Intuition / JEV): Sub-second probabilistic classification, routing, and candidate pruning
-- System 2 (Deep Reasoning / Host LLM): Complex causal reasoning, architecture design, and verified execution
+Implements an advisory 3+1 cognitive hierarchy for coding agents (Codex, Claude Code, Cursor):
+- Layer 0 (Deterministic Reflex): Regex DLP screening, destructive command pattern detection, schema validation
+- System 1 (Fast Intuition / JEV): Advisory probabilistic classification, routing, and candidate ranking
+- System 2 (Deep Reasoning / Host LLM): Complex causal reasoning, architecture design, and host-enforced execution
 - Meta-Controller: 5-factor arbitration (Confidence, Risk, Reversibility, Value, Cost)
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from .core import (
     call_jev,
+    contains_sensitive_credential,
     JevIntegrationError,
     ConfidenceLevel,
     NoulDecision,
@@ -53,6 +54,7 @@ from .controller import (
 __all__ = [
     "__version__",
     "call_jev",
+    "contains_sensitive_credential",
     "JevIntegrationError",
     "ConfidenceLevel",
     "NoulDecision",

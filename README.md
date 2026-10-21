@@ -7,9 +7,9 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![MCP Protocol](https://img.shields.io/badge/MCP-2024--11--05-purple.svg)](jev_kit/mcp_server.py)
 
-**3+1 Cognitive Hierarchy Toolkit & Model Context Protocol (MCP) Server for Autonomous Coding Agents (OpenAI Codex CLI, Claude Code, Cursor, Antigravity).**
+**Advisory 3+1 Cognitive Hierarchy Toolkit & Model Context Protocol (MCP) Server for Coding Agents (OpenAI Codex CLI, Claude Code, Cursor, Antigravity).**
 
-`jev-cognitive-mcp` prevents coding agents from burning reasoning tokens on trivial pattern checks, executing destructive or secret-leaking shell commands, or prematurely declaring incomplete diffs "done."
+`jev-cognitive-mcp` provides deterministic Layer-0 DLP/destructive command pre-screening, 5-factor Meta-Controller escalation arbitration, and optional System-1 probabilistic triage (`guard`, `route`, `verify`, `rerank`) over stdio MCP. All verdicts and routing signals are **advisory**—the host agent remains responsible for enforcing command blocking, sandboxing, and human-in-the-loop approval gates.
 
 ---
 
@@ -17,38 +17,51 @@
 
 ```mermaid
 flowchart LR
-    A[Incoming Agent Action / Task] --> L0["Layer 0: Deterministic Reflex<br/>(<1ms, 0 tokens)<br/>DLP regex, destructive command block"]
-    L0 -->|Blocked / Matched| OUT0[Immediate Verdict]
-    L0 -->|Needs Semantic Triage| S1["System 1: Fast Intuition (JEV)<br/>(Sub-second probabilistic scoring)<br/>Guard / Route / Rerank / Verify"]
+    A["Incoming Agent Action / Task"] --> L0["Layer 0: Deterministic Reflex<br/>(0 network / 0 token cost)<br/>DLP regex & destructive pattern screen"]
+    L0 -->|Blocked / Matched| OUT0["Immediate Advisory Verdict"]
+    L0 -->|Needs Semantic Triage| S1["System 1: Probabilistic Intuition (JEV)<br/>(Requires external JevBridge)<br/>Guard / Route / Rerank / Verify"]
     S1 --> MC{"Meta-Controller<br/>5-Factor Arbitration"}
-    MC -->|High Confidence & Two-Way Door| OUT1[Fast Path Execution]
-    MC -->|Low Confidence / High Risk| S2["System 2: Deep Reasoning LLM<br/>(Codex / o3 / Sonnet Thinking)"]
-    MC -->|One-Way Door & High Risk| HG[Explicit Human Gate]
+    MC -->|High Confidence & Two-Way Door| OUT1["Advisory Fast Path"]
+    MC -->|Low Confidence / High Risk| S2["System 2: Host Frontier LLM<br/>(Codex / o3 / Sonnet Thinking)"]
+    MC -->|One-Way Door & High Risk| HG["Explicit Human Gate Required"]
 ```
 
-| Layer | Role | Latency / Cost | Responsibility |
+| Layer | Role | Execution Mode | Responsibility |
 |---|---|---|---|
-| **Layer 0 (Reflex)** | Deterministic Code | `< 1 ms` / `0 tokens` | Regex DLP secret screening (`sk-*`, `ghp_*`, `Bearer`), destructive shell blocking (`rm -rf /`, `mkfs`, `DROP DATABASE`, `curl \| bash`), strict JSON schema bounds |
-| **System 1 (Intuition)** | Probabilistic JEV | `~80–250 ms` / Micro-cost | Multi-head `noul` (boolean probability), `choice` (categorical distribution), and `score` (0..4 ordinal rubric) evaluations |
-| **System 2 (Reasoning)** | Host Frontier LLM | Seconds / Full budget | Complex causal reasoning, multi-file architecture design, subtle concurrency debugging |
-| **Meta-Controller** | Control Plane | `< 1 ms` / `0 tokens` | Arbitrates escalation using 5 quantitative signals: **Confidence**, **Risk**, **Reversibility**, **Expected Value**, and **Cost Pressure** |
+| **Layer 0 (Reflex)** | Deterministic Code | Local offline (`0 tokens`, no network call) | Pre-egress regex DLP credential screening (`sk-*`, `ghp_*`, `glpat-*`, `AKIA*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM keys), destructive shell pattern matching (`rm -rf /`, `rm -rf -- /`, `Remove-Item -Recurse -Force`, `mkfs`, `DROP DATABASE`, `curl \| bash`), strict schema validation |
+| **System 1 (Intuition)** | Probabilistic JEV | External `JevBridge` single-attempt call | Multi-head `noul` (boolean probability), `choice` (categorical distribution), and `score` (0..4 ordinal rubric) evaluations |
+| **System 2 (Reasoning)** | Host Frontier LLM | Host agent runtime | Complex causal reasoning, multi-file architecture design, subtle debugging |
+| **Meta-Controller** | Control Plane | Local offline (`0 tokens`, no network call) | Arbitrates escalation using 5 quantitative signals: **Confidence**, **Risk**, **Reversibility**, **Expected Value**, and **Cost Pressure** |
 
 ---
 
 ## Core Modules & MCP Tools
 
-1. **`jev_guard` (`jev_kit.guard`) — Pre-Tool Execution Security Gate**
-   - Screens shell commands before execution.
-   - Layer 0 blocks literal credential egress (`SENSITIVE_INPUT_REJECTED`) and destructive shell pipes immediately with zero network calls.
-   - System 1 evaluates `is_destructive`, `is_rce_or_exfil`, and `is_secret_leak` probabilities.
-2. **`jev_route` (`jev_kit.router`) — Dynamic Task & Model Tier Router**
-   - Classifies incoming coding prompts into `FAST` (`codex-mini-latest`, `gpt-4o-mini`), `STANDARD` (`gpt-4.1`, `gpt-4o`), or `DEEP_REASONING` (`o3`, `codex-1`) tiers while estimating architectural blast radius.
-3. **`jev_verify` (`jev_kit.verifier`) — Unbiased Completion & Acceptance Gate**
-   - Evaluates the original specification, implemented diff summary, and test runner output to return `PASS`, `ADVISORY`, or `NEEDS_REVISION`.
-4. **`jev_rerank` (`jev_kit.reranker`) — Bounded Semantic Candidate Reranker**
-   - Ranks up to 96 code snippets or issue candidates in deterministic batches of 12 while preserving full provenance and failing closed on partial batch errors.
-5. **`jev_arbitrate` (`jev_kit.controller`) — 5-Factor Meta-Controller**
-   - Computes expected escalation utility from `(confidence, risk, reversible, expected_value, cost_pressure)` and enforces hard human gates on irreversible high-risk actions.
+1. **`jev_guard` (`jev_kit.guard`) — Advisory Pre-Tool Command Risk Screen**
+   - Evaluates shell commands before execution and returns an advisory action (`ALLOW`, `INSPECT`, `ESCALATE_HUMAN`, or `BLOCK`).
+   - **Layer 0 (`reflex_only=true` or pre-screen)**: Blocks literal credential egress (`SENSITIVE_INPUT_REJECTED`) and known destructive shell/PowerShell patterns locally with zero network calls.
+   - **System 1 (when `reflex_only=false`)**: Evaluates `is_destructive`, `is_rce_or_exfil`, and `is_secret_leak` probabilities via `JevBridge`.
+2. **`jev_arbitrate` (`jev_kit.controller`) — Offline 5-Factor Meta-Controller**
+   - Purely deterministic calculation of expected escalation utility from `(confidence, risk, reversible, expected_value, cost_pressure)`. Recommends `human_gate` on irreversible high-risk actions. Works completely offline.
+3. **`jev_route` (`jev_kit.router`) — Advisory Task & Model Tier Router**
+   - Classifies incoming coding prompts into `FAST` (`codex-mini-latest`, `gpt-4o-mini`), `STANDARD` (`gpt-4.1`, `gpt-4o`), or `DEEP_REASONING` (`o3`, `codex-1`) tiers while estimating architectural scope.
+4. **`jev_verify` (`jev_kit.verifier`) — Caller-Supplied Completion & Acceptance Review**
+   - Reviews caller-supplied `task_spec`, `implemented_changes` summary, and `test_results` logs to return `PASS`, `ADVISORY`, or `NEEDS_REVISION`. Does **not** inspect git repositories or run test suites directly.
+5. **`jev_rerank` (`jev_kit.reranker`) — Bounded Semantic Candidate Reranker**
+   - Ranks up to 96 caller-supplied code snippets or issue candidates in deterministic batches of 12 while preserving full provenance and failing closed on partial batch errors.
+
+---
+
+## Offline Deterministic Mode vs. External `JevBridge` Requirement
+
+- **Works 100% Offline (Zero External Dependencies)**:
+  - `jev_arbitrate` (5-factor Meta-Controller)
+  - `jev_guard` with `reflex_only=true` (`jev-kit guard "<cmd>" --reflex-only`)
+  - `jev-kit init-codex` (configuration generator for OpenAI Codex CLI and MCP clients)
+  - Pre-egress credential DLP screening inside `call_jev()` (blocks sensitive tokens before any bridge lookup)
+- **Requires External `JevBridge` Runtime**:
+  - `jev_guard` (when `reflex_only=false` and Layer 0 does not match), `jev_route`, `jev_verify`, and `jev_rerank` invoke `jev_cli.py` from the local `JevBridge` runtime directory.
+  - Set `JEV_BRIDGE_DIR=/path/to/JevBridge/runtime` (defaults to `%LOCALAPPDATA%\JevBridge\runtime` on Windows or `~/.local/share/JevBridge/runtime` on Linux/macOS). If the bridge runtime is not installed, these tools fail closed with `JevIntegrationError(code="BRIDGE_MISSING")`.
 
 ---
 
@@ -62,9 +75,19 @@ cd jev-cognitive-mcp
 pip install -e ".[dev]"
 ```
 
-### 2. Wire into OpenAI Codex CLI / MCP Clients
+### 2. Wire into OpenAI Codex CLI (`~/.codex/config.toml`)
 
-Add `jev-cognitive-mcp` to your MCP configuration (`~/.codex/config.toml` or `mcp_config.json`):
+Generate the exact TOML snippet with `jev-kit init-codex --format toml` and add it to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.jev_cognitive]
+command = "jev-mcp"
+args = []
+```
+
+### 3. Wire into JSON MCP Clients (Claude Code, Cursor, Antigravity)
+
+Generate with `jev-kit init-codex --format json`:
 
 ```json
 {
@@ -77,26 +100,30 @@ Add `jev-cognitive-mcp` to your MCP configuration (`~/.codex/config.toml` or `mc
 }
 ```
 
-### 3. CLI Usage
+### 4. CLI Usage & Verification
 
 ```bash
-# Layer-0 deterministic reflex screen (0 tokens)
-jev-kit guard "rm -rf / --no-preserve-root" --reflex-only
+# Generate OpenAI Codex CLI config.toml snippet
+jev-kit init-codex --format toml
 
-# 5-factor Meta-Controller arbitration
+# Layer-0 deterministic reflex screen (offline, 0 tokens)
+jev-kit guard "rm -rf -- /" --reflex-only
+
+# 5-factor Meta-Controller arbitration (offline, 0 tokens)
 jev-kit arbitrate --confidence 0.62 --risk 0.75 --irreversible --value 0.85
 
-# Run full test suite
-pytest -v
+# Run deterministic unit test suite
+python -m unittest discover -s tests -v
 ```
 
 ---
 
-## Security & Reliability Guarantees
+## Security & Reliability Boundaries
 
-- **Zero Direct Credential Handling**: `call_jev()` rejects explicit `api_key` parameters (`DIRECT_CREDENTIALS_DISABLED`). Credentials remain isolated in the local bridge runtime.
-- **No Silent Fallbacks**: Timeouts, malformed responses, or missing confidence buckets never default to `ALLOW` or `PASS`; they raise `JevIntegrationError` with explicit `billing_uncertain` tracking.
-- **Single-Attempt Budget Discipline**: Each logical call performs at most one upstream evaluation with zero automatic retries.
+- **Pre-Egress Credential DLP Chokepoint**: Both `local_reflex_screen()` and `call_jev()` screen serialized inputs for literal secrets (`sk-*`, `ghp_*`, `glpat-*`, `AKIA*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM private keys, and URL userinfo credentials) and raise `SENSITIVE_INPUT_REJECTED` before `_invoke_bridge()` can be called.
+- **Zero Direct Credential Arguments**: `call_jev()` rejects explicit `api_key`, `token`, or `secret` keyword arguments (`DIRECT_CREDENTIALS_DISABLED`).
+- **Advisory Boundary**: Outputs from `jev-cognitive-mcp` are advisory structured signals; host agents must enforce execution blocking and human approval gates.
+- **No Silent Fallbacks**: Timeouts, missing bridge runtimes (`BRIDGE_MISSING`), or malformed responses raise `JevIntegrationError` with explicit `billing_uncertain` tracking rather than defaulting to `ALLOW` or `PASS`.
 
 ## License
 

@@ -1,9 +1,10 @@
 """
-Pre-Tool Security Gate & Layer-0 Deterministic Reflex Screen.
+Advisory Pre-Tool Security Gate & Layer-0 Deterministic Reflex Screen.
 
 Combines deterministic regex screening (Layer 0) with System-1 probabilistic
-semantic screening (JEV) before an agent executes shell commands.
-Advisory semantic screening never overrides host permission boundaries.
+semantic screening (JEV) to provide advisory risk signals before a host executes
+shell commands. Execution blocking and permission enforcement remain the
+responsibility of the host runtime.
 """
 
 from dataclasses import dataclass
@@ -12,6 +13,7 @@ import re
 from typing import Optional
 from .core import (
     call_jev,
+    contains_sensitive_credential,
     ConfidenceLevel,
     JevResponse,
     JevIntegrationError,
@@ -42,50 +44,47 @@ class GuardVerdict:
     layer0_triggered: bool = False
 
 
-_SENSITIVE_CREDENTIAL_PATTERN = re.compile(
-    r"(?i)\bsk-(?:or-|proj-)?[A-Za-z0-9_-]{12,}"
-    r"|\bgh[pousr]_[A-Za-z0-9_]{20,}"
-    r"|\bglpat-[A-Za-z0-9_-]{16,}"
-    r"|\bxox[bpas]-[A-Za-z0-9-]{10,}"
-    r"|\b[a-z][a-z0-9+.-]{1,20}://[^/\s:@]{1,64}:[^@\s/]{4,128}@"
-    r"|\bBearer\s+[A-Za-z0-9._~+/-]{12,}"
-    r"|(?:api[_-]?key|password|secret|access[_-]?token)\s*[=:]\s*['\"][^'\"]+['\"]"
-)
-
 _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
-    r"(?i)(?:\brm\s+-[rRfF]*\s+/(?:\s|$|\*)"
+    r"(?i)(?:"
+    # POSIX rm variants including separated flags (-r -f), -- option terminator, and root/home/wildcard targets
+    r"\brm\b(?:\s+-(?:[rRfFiIv]+|-recursive|-force|-no-preserve-root))+\s+(?:--\s+)?(?:/(?:\s|$|\*)|~(?:/|\s|$)|\*)"
     r"|\bmkfs(?:\.[a-z0-9]+)?\b"
     r"|\bdd\s+if=/dev/(?:zero|random|urandom)\b"
     r"|\bDROP\s+(?:DATABASE|SCHEMA|TABLE)\b"
     r"|\bTRUNCATE\s+TABLE\b"
-    r"|\bFormat-Volume\b"
-    r"|\bcurl\b[^|;]*\|\s*(?:ba)?sh\b"
-    r"|\bwget\b[^|;]*\|\s*(?:ba)?sh\b)"
+    # Windows PowerShell & CMD recursive/volume deletion patterns
+    r"|\b(?:Format-Volume|Clear-Disk)\b"
+    r"|\b(?:Remove-Item|ri|rm|del|erase|rd|rmdir)\b[^\r\n;|]*(?:-Recurse|-Force|/s|/q)[^\r\n;|]*(?:-Recurse|-Force|/s|/q)"
+    # Remote script pipe into shell / interpreter
+    r"|\b(?:curl|wget|Invoke-WebRequest|iwr|irm)\b[^|;\r\n]*\|\s*(?:(?:ba|z|k)?sh|pwsh|powershell|iex|Invoke-Expression|python[23]?)\b"
+    r")"
 )
 
 
 def local_reflex_screen(command: str, context: Optional[str] = None) -> Optional[GuardVerdict]:
-    """Layer-0 deterministic reflex screen (<1ms, 0 tokens).
+    """Layer-0 deterministic reflex screen (0 model tokens).
 
-    Rejects raw credential egress immediately and blocks unambiguous destructive
-    or remote-pipe patterns without invoking any model.
+    Rejects known credential patterns before any external request and flags
+    known destructive or remote-pipe shell patterns without invoking a model.
+    This screen is a bounded heuristic filter, not a complete shell parser or DLP engine.
     """
     if not isinstance(command, str) or not command.strip() or (context is not None and not isinstance(context, str)):
         raise JevIntegrationError("INPUT_INVALID")
-    if _SENSITIVE_CREDENTIAL_PATTERN.search(command) or (context and _SENSITIVE_CREDENTIAL_PATTERN.search(context)):
+    if contains_sensitive_credential(command) or (context and contains_sensitive_credential(context)):
         raise JevIntegrationError("SENSITIVE_INPUT_REJECTED")
     if _DESTRUCTIVE_REFLEX_PATTERN.search(command):
+        is_pipe = bool(re.search(r"(?i)\|\s*(?:(?:ba|z|k)?sh|pwsh|powershell|iex|Invoke-Expression|python[23]?)\b", command))
         return GuardVerdict(
             action=GuardAction.BLOCK,
             is_destructive=True,
             destructive_prob=1.0,
-            is_rce_or_exfil=bool(re.search(r"(?i)\|\s*(?:ba)?sh\b", command)),
-            rce_prob=1.0 if re.search(r"(?i)\|\s*(?:ba)?sh\b", command) else 0.0,
+            is_rce_or_exfil=is_pipe,
+            rce_prob=1.0 if is_pipe else 0.0,
             is_secret_leak=False,
             secret_prob=0.0,
             overall_confidence=1.0,
             confidence_level=ConfidenceLevel.HIGH,
-            summary="Blocked by Layer-0 deterministic reflex: high-risk destructive or remote shell pipe pattern.",
+            summary="Advisory BLOCK by Layer-0 deterministic reflex: matched known destructive or remote-shell pipe pattern.",
             response=None,
             layer0_triggered=True,
         )
@@ -93,7 +92,7 @@ def local_reflex_screen(command: str, context: Optional[str] = None) -> Optional
 
 
 def check_command_safety(command: str, context: Optional[str] = None) -> GuardVerdict:
-    """Screen command safety via Layer-0 reflex followed by System-1 probabilistic evaluation."""
+    """Provide advisory command safety verdict via Layer-0 reflex followed by System-1 evaluation."""
     reflex = local_reflex_screen(command, context)
     if reflex is not None:
         return reflex
@@ -130,7 +129,7 @@ def check_command_safety(command: str, context: Optional[str] = None) -> GuardVe
         },
         "decision": {
             "type": "choice",
-            "instructions": "Choose the required execution policy for this command",
+            "instructions": "Choose the recommended execution policy for this command",
             "criteria": {
                 "safe": "Standard harmless dev command (git status, pytest, ls, harmless compiles)",
                 "caution": "Modifying commands that need user awareness (file edits, migrations, installs)",
@@ -156,17 +155,17 @@ def check_command_safety(command: str, context: Optional[str] = None) -> GuardVe
 
     if choice_val == "dangerous" or dest_prob >= 0.70 or rce_prob >= 0.65 or sec_prob >= 0.65:
         action = GuardAction.BLOCK
-        summary = "Blocked: High security risk detected (destructive, RCE, or credential exposure)."
+        summary = "Advisory BLOCK: High security risk indicated (destructive, RCE, or credential exposure). Host should block execution."
     elif choice_val in ("caution", "insufficient") or max(dest_prob, rce_prob, sec_prob) >= 0.35:
         action = GuardAction.REQUIRE_CONFIRMATION
-        summary = "Confirmation required: Command modifies system state or presents moderate risk."
+        summary = "Advisory REQUIRE_CONFIRMATION: Command modifies system state or presents moderate risk."
     else:
         if level != ConfidenceLevel.HIGH:
             action = GuardAction.REQUIRE_CONFIRMATION
-            summary = "Review required: confidence is absent or below the high descriptive bucket."
+            summary = "Advisory REQUIRE_CONFIRMATION: confidence is absent or below the high descriptive bucket."
         else:
             action = GuardAction.ALLOW
-            summary = "Low-risk advisory result; existing execution permissions still apply."
+            summary = "Advisory ALLOW: low-risk signal; host execution permissions still apply."
 
     return GuardVerdict(
         action=action,
