@@ -9,8 +9,11 @@ responsibility of the host runtime.
 
 from dataclasses import dataclass
 from enum import Enum
+import json
+from pathlib import Path
 import re
-from typing import Optional
+import time
+from typing import Any, Dict, Optional, Union
 from .core import (
     call_jev,
     contains_sensitive_credential,
@@ -181,3 +184,45 @@ def check_command_safety(command: str, context: Optional[str] = None) -> GuardVe
         response=resp,
         layer0_triggered=False,
     )
+
+
+def run_layer0_benchmark(jsonl_path: Union[str, Path]) -> Dict[str, Any]:
+    """Run deterministic offline JSONL replay benchmark over Layer-0 DLP & destructive reflex rules."""
+    path = Path(jsonl_path)
+    if not path.is_file():
+        raise JevIntegrationError("INPUT_INVALID")
+
+    total = 0
+    matched = 0
+    mismatches = []
+    start_ns = time.perf_counter_ns()
+
+    with path.open("r", encoding="utf-8") as fh:
+        for line_no, raw_line in enumerate(fh, start=1):
+            line = raw_line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            cmd = row["command"]
+            expected = row["expected"]
+            case_id = row.get("id", f"row-{line_no}")
+            total += 1
+            try:
+                verdict = local_reflex_screen(cmd)
+                actual = "destructive_blocked" if (verdict and verdict.action == GuardAction.BLOCK) else "pass_reflex"
+            except JevIntegrationError as exc:
+                actual = "sensitive_rejected" if exc.code == "SENSITIVE_INPUT_REJECTED" else exc.code
+
+            if actual == expected:
+                matched += 1
+            else:
+                mismatches.append({"id": case_id, "expected": expected, "actual": actual})
+
+    elapsed_ms = (time.perf_counter_ns() - start_ns) / 1_000_000.0
+    return {
+        "total": total,
+        "matched": matched,
+        "accuracy": round(matched / total, 4) if total else 0.0,
+        "elapsed_ms": round(elapsed_ms, 3),
+        "mismatches": mismatches,
+    }

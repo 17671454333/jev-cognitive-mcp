@@ -15,7 +15,7 @@ import argparse
 import json
 import sys
 from .core import JevIntegrationError, _resolve_bridge_dir
-from .guard import check_command_safety, local_reflex_screen
+from .guard import check_command_safety, local_reflex_screen, run_layer0_benchmark
 from .router import route_task
 from .verifier import verify_completion
 from .reranker import rerank
@@ -89,6 +89,10 @@ def main():
     init_parser = subparsers.add_parser("init-codex", help="Generate MCP configuration stanza for Codex (TOML) or JSON clients")
     init_parser.add_argument("--format", choices=["toml", "json"], default="toml", help="Config format (default: toml for ~/.codex/config.toml)")
 
+    # benchmark
+    bench_parser = subparsers.add_parser("benchmark", help="Run offline Layer-0 JSONL replay benchmark")
+    bench_parser.add_argument("--input", default="benchmarks/layer0_corpus.jsonl", help="Path to JSONL benchmark fixture")
+
     # mcp
     subparsers.add_parser("mcp", help="Start JSON-RPC 2.0 MCP stdio server")
 
@@ -96,6 +100,11 @@ def main():
 
     if args.command == "mcp":
         run_stdio_server()
+        return
+
+    if args.command == "benchmark":
+        summary = run_layer0_benchmark(args.input)
+        print(json.dumps(summary, indent=2))
         return
 
     if args.command == "init-codex":
