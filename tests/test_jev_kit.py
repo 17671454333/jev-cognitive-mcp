@@ -1,4 +1,4 @@
-"""Comprehensive deterministic test suite for jev-cognitive-mcp (compatible with unittest & pytest)."""
+﻿"""Comprehensive deterministic test suite for jev-cognitive-mcp (compatible with unittest & pytest)."""
 import json
 import os
 import unittest
@@ -224,11 +224,11 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.3.1")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.3.2")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
-        self.assertTrue({"jev_guard", "jev_route", "jev_verify", "jev_rerank", "jev_arbitrate"} <= tool_names)
+        self.assertTrue({"jev_guard", "jev_route", "jev_verify", "jev_rerank", "jev_arbitrate", "jev_benchmark"} <= tool_names)
 
         arb_resp = handle_mcp_request(
             {
