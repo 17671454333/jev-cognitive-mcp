@@ -18,7 +18,7 @@ import sys
 from typing import Any, Dict, Optional
 from . import __version__
 from .core import JevIntegrationError
-from .guard import check_command_safety, local_reflex_screen
+from .guard import check_command_safety, local_reflex_screen, run_layer0_benchmark
 from .router import route_task
 from .verifier import verify_completion
 from .reranker import rerank
@@ -99,6 +99,20 @@ MCP_TOOLS = [
                 "requires_causal_proof": {"type": "boolean", "default": False},
             },
             "required": ["confidence", "risk", "reversible"],
+        },
+    },
+    {
+        "name": "jev_benchmark",
+        "description": "Run the offline deterministic Layer-0 JSONL replay benchmark suite and return accuracy and timing metrics.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "input_path": {
+                    "type": "string",
+                    "default": "benchmarks/layer0_corpus.jsonl",
+                    "description": "Path to JSONL benchmark fixture file.",
+                },
+            },
         },
     },
 ]
@@ -268,6 +282,11 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             "triggers": decision.triggers,
             "rationale": decision.rationale,
         }
+
+    if name == "jev_benchmark":
+        input_path = args.get("input_path", "benchmarks/layer0_corpus.jsonl")
+        summary = run_layer0_benchmark(input_path)
+        return {"ok": True, "advisory": True, **summary}
 
     raise ValueError(f"Unknown tool: {name}")
 
