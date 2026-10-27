@@ -228,7 +228,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
-        self.assertTrue({"jev_guard", "jev_route", "jev_verify", "jev_rerank", "jev_arbitrate"} <= tool_names)
+        self.assertTrue({"jev_guard", "jev_route", "jev_verify", "jev_rerank", "jev_arbitrate", "jev_benchmark"} <= tool_names)
 
         arb_resp = handle_mcp_request(
             {
