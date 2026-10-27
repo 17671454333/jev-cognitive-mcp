@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jev-cognitive-mcp"
-version = "0.3.2"
+version = "0.3.1"
 description = "Advisory 3+1 Cognitive Hierarchy Toolkit & Model Context Protocol (MCP) Server for Agentic Coding: Pre-Tool Risk Screening, Dynamic Task Routing, Candidate Ranking, and Evidence Review."
 readme = "README.md"
 license = { text = "MIT" }
