@@ -59,7 +59,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\b(?:Format-Volume|Clear-Disk)\b"
     r"|\b(?:Remove-Item|ri|rm|del|erase|rd|rmdir)\b[^\r\n;|]*(?:-Recurse|-Force|/s|/q)[^\r\n;|]*(?:-Recurse|-Force|/s|/q)"
     # Remote script pipe into shell / interpreter
-    r"|\b(?:curl|wget|Invoke-WebRequest|iwr|irm)\b[^|;\r\n]*\|\s*(?:(?:ba|z|k)?sh|pwsh|powershell|iex|Invoke-Expression|python[23]?)\b"
+    r"|\b(?:curl|wget|Invoke-WebRequest|iwr|irm|base64)\b[^|;\r\n]*\|\s*(?:(?:ba|z|k)?sh|pwsh|powershell|iex|Invoke-Expression|python[23]?)\b"
+    r"|\b(?:pwsh|powershell)\b[^\r\n;|]*\s-(?:e|en|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}"
     r")"
 )
 
