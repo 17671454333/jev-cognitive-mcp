@@ -1,0 +1,35 @@
+name: Nightly Layer-0 Security Benchmark
+
+on:
+  schedule:
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run offline Layer-0 JSONL replay benchmark
+        run: |
+          python -m jev_kit benchmark --input benchmarks/layer0_corpus.jsonl
+
+      - name: Verify OpenAI Codex CLI config rendering
+        run: |
+          python -m jev_kit init-codex --format toml
+          python -m jev_kit init-codex --format json
