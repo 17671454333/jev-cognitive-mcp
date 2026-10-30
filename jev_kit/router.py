@@ -124,3 +124,57 @@ def route_task(task_description: str, context: Optional[str] = None) -> RouteVer
         rationale=rationale,
         response=resp,
     )
+
+
+@dataclass
+class AutopilotPlan:
+    tier: ModelTier
+    reasoning_effort: str
+    context_tier: str
+    selected_model: str
+    fallback_models: List[str]
+    rationale: str
+
+
+def autopilot_select(task_description: str, context_chars: int = 0) -> AutopilotPlan:
+    """Zero-config offline autopilot selector for model tier, reasoning_effort, and context fit."""
+    if not isinstance(task_description, str) or not task_description.strip() or context_chars < 0:
+        raise JevIntegrationError("INPUT_INVALID")
+
+    text = task_description.lower()
+    total_chars = len(task_description) + int(context_chars)
+
+    if total_chars >= 120_000:
+        context_tier = "long_context"
+    elif total_chars >= 16_000:
+        context_tier = "medium"
+    else:
+        context_tier = "short"
+
+    deep_keywords = (
+        "architecture", "consensus", "raft", "deadlock", "concurrency", "race condition",
+        "security audit", "cryptograph", "zero-downtime", "distributed", "theorem", "proof",
+    )
+    fast_keywords = (
+        "typo", "format", "rename", "docstring", "comment", "translate", "lint", "readme",
+    )
+
+    if any(k in text for k in deep_keywords) or context_tier == "long_context":
+        tier = ModelTier.DEEP_REASONING
+        effort = "high"
+    elif any(k in text for k in fast_keywords) and context_tier == "short" and len(task_description) < 240:
+        tier = ModelTier.FAST
+        effort = "low"
+    else:
+        tier = ModelTier.STANDARD
+        effort = "medium"
+
+    candidates = TIER_MODELS[tier]
+    return AutopilotPlan(
+        tier=tier,
+        reasoning_effort=effort,
+        context_tier=context_tier,
+        selected_model=candidates[0],
+        fallback_models=candidates[1:],
+        rationale=f"Autopilot selected {tier.value} (reasoning_effort={effort}, context_tier={context_tier}).",
+    )

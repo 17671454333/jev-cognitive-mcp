@@ -19,7 +19,7 @@ from typing import Any, Dict, Optional
 from . import __version__
 from .core import JevIntegrationError
 from .guard import check_command_safety, local_reflex_screen, run_layer0_benchmark
-from .router import route_task
+from .router import route_task, autopilot_select
 from .verifier import verify_completion
 from .reranker import rerank
 from .controller import arbitrate_escalation, ControllerSignals
@@ -113,6 +113,18 @@ MCP_TOOLS = [
                     "description": "Path to JSONL benchmark fixture file.",
                 },
             },
+        },
+    },
+    {
+        "name": "jev_autopilot",
+        "description": "Zero-config offline autopilot selector that recommends model tier, reasoning_effort (low/medium/high), and context tier without manual grouping.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "task_description": {"type": "string", "description": "Task description or prompt."},
+                "context_chars": {"type": "integer", "default": 0, "description": "Approximate context character count."},
+            },
+            "required": ["task_description"],
         },
     },
 ]
@@ -287,6 +299,22 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         input_path = args.get("input_path", "benchmarks/layer0_corpus.jsonl")
         summary = run_layer0_benchmark(input_path)
         return {"ok": True, "advisory": True, **summary}
+
+    if name == "jev_autopilot":
+        plan = autopilot_select(
+            args.get("task_description", ""),
+            int(args.get("context_chars", 0)),
+        )
+        return {
+            "ok": True,
+            "advisory": True,
+            "tier": plan.tier.value,
+            "reasoning_effort": plan.reasoning_effort,
+            "context_tier": plan.context_tier,
+            "selected_model": plan.selected_model,
+            "fallback_models": plan.fallback_models,
+            "rationale": plan.rationale,
+        }
 
     raise ValueError(f"Unknown tool: {name}")
 

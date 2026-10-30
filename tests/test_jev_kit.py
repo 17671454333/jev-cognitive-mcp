@@ -283,6 +283,27 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
+    def test_zero_config_autopilot_mcp_tool(self):
+        resp = handle_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "tools/call",
+                "params": {
+                    "name": "jev_autopilot",
+                    "arguments": {
+                        "task_description": "Redesign distributed Raft consensus protocol with zero-downtime snapshotting",
+                        "context_chars": 24000,
+                    },
+                },
+            }
+        )
+        self.assertFalse(resp["result"]["isError"])
+        payload = json.loads(resp["result"]["content"][0]["text"])
+        self.assertEqual(payload["tier"], "deep_reasoning")
+        self.assertEqual(payload["reasoning_effort"], "high")
+        self.assertEqual(payload["context_tier"], "medium")
+
 
 if __name__ == "__main__":
     unittest.main()
