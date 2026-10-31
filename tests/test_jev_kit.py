@@ -278,8 +278,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
 
     def test_layer0_jsonl_replay_benchmark_accuracy(self):
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 11)
-        self.assertEqual(summary["matched"], 11)
+        self.assertEqual(summary["total"], 13)
+        self.assertEqual(summary["matched"], 13)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
