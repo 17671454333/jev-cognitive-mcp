@@ -61,6 +61,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     # Remote script pipe into shell / interpreter
     r"|\b(?:curl|wget|Invoke-WebRequest|iwr|irm|base64)\b[^|;\r\n]*\|\s*(?:(?:ba|z|k)?sh|pwsh|powershell|iex|Invoke-Expression|python[23]?)\b"
     r"|\b(?:pwsh|powershell)\b[^\r\n;|]*\s-(?:e|en|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}"
+    r"|:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:"
+    r"|\bchmod\b(?:\s+-(?:[Rrfv]+|-recursive))+\s+000\s+(?:--\s+)?/(?:\s|$|\*)"
     r")"
 )
 
