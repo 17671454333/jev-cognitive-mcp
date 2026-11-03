@@ -35,6 +35,9 @@ class TestJevCognitiveMcp(unittest.TestCase):
             "Remove-Item -Path C:\\temp\\workspace -Recurse -Force",
             "Remove-Item C:\\build -Force -Recurse",
             "rd /s /q C:\\temp\\data",
+            "wipefs -a /dev/sda",
+            "cat /dev/zero > /dev/sda",
+            "shred -u /",
         ]:
             verdict = local_reflex_screen(cmd)
             self.assertIsNotNone(verdict, f"Expected Layer 0 to block: {cmd}")
@@ -55,6 +58,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
             "echo password=SYNTHETIC_REVIEW_ONLY_123 && whoami",
             "db_connect --secret=MyUnquotedSecretValue99",
             "set TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "export SENDGRID_API_KEY=SG.abcdefghijklmnopqrstuv.1234567890123456789012345678901234567890123",
+            "export ANTHROPIC_API_KEY=sk-ant-api03-SYNTHETIC0123456789abcdefghijklmnop",
         ]:
             self.assertTrue(contains_sensitive_credential(secret_cmd), f"Expected DLP match for: {secret_cmd}")
             with self.assertRaises(JevIntegrationError) as ctx:
@@ -278,8 +283,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
 
     def test_layer0_jsonl_replay_benchmark_accuracy(self):
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 16)
-        self.assertEqual(summary["matched"], 16)
+        self.assertEqual(summary["total"], 22)
+        self.assertEqual(summary["matched"], 22)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 

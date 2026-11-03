@@ -53,6 +53,9 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"\brm\b(?:\s+-(?:[rRfFiIv]+|-recursive|-force|-no-preserve-root))+\s+(?:--\s+)?(?:/(?:\s|$|\*)|~(?:/|\s|$)|\*)"
     r"|\bmkfs(?:\.[a-z0-9]+)?\b"
     r"|\bdd\s+if=/dev/(?:zero|random|urandom)\b"
+    r"|\bwipefs\s+-(?:a|-all)\b"
+    r"|\bcat\s+/dev/(?:zero|random|urandom)\s*>\s*/dev/sd[a-z0-9]+\b"
+    r"|>\s*/dev/sd[a-z0-9]+\b"
     r"|\bDROP\s+(?:DATABASE|SCHEMA|TABLE)\b"
     r"|\bTRUNCATE\s+TABLE\b"
     # Windows PowerShell & CMD recursive/volume deletion patterns
@@ -63,6 +66,7 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\b(?:pwsh|powershell)\b[^\r\n;|]*\s-(?:e|en|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}"
     r"|:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:"
     r"|\bchmod\b(?:\s+-(?:[Rrfv]+|-recursive))+\s+000\s+(?:--\s+)?/(?:\s|$|\*)"
+    r"|\bshred\b(?:\s+-(?:[a-z]*u[a-z]*))+\s+(?:--\s+)?/(?:\s|$|\*)"
     r")"
 )
 
