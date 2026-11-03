@@ -28,7 +28,7 @@ flowchart LR
 
 | Layer | Role | Execution Mode | Responsibility |
 |---|---|---|---|
-| **Layer 0 (Reflex)** | Deterministic Code | Local offline (`0 tokens`, no network call) | Pre-egress regex DLP credential screening (`sk-*`, `ghp_*`, `glpat-*`, `AKIA*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM keys), destructive shell pattern matching (`rm -rf /`, `rm -rf -- /`, `Remove-Item -Recurse -Force`, `mkfs`, `DROP DATABASE`, `curl \| bash`), strict schema validation |
+| **Layer 0 (Reflex)** | Deterministic Code | Local offline (`0 tokens`, no network call) | Pre-egress regex DLP credential screening (`sk-*`, `sk-ant-*`, `ghp_*`, `glpat-*`, `AKIA*`, `SG.*`, `pypi-*`, `hf_*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM keys), destructive shell pattern matching (`rm -rf /`, `rm -rf -- /`, `Remove-Item -Recurse -Force`, `mkfs`, `wipefs -a`, `shred -u /`, `DROP DATABASE`, `curl \| bash`), strict schema validation |
 | **System 1 (Intuition)** | Probabilistic JEV | External `JevBridge` single-attempt call | Multi-head `noul` (boolean probability), `choice` (categorical distribution), and `score` (0..4 ordinal rubric) evaluations |
 | **System 2 (Reasoning)** | Host Frontier LLM | Host agent runtime | Complex causal reasoning, multi-file architecture design, subtle debugging |
 | **Meta-Controller** | Control Plane | Local offline (`0 tokens`, no network call) | Arbitrates escalation using 5 quantitative signals: **Confidence**, **Risk**, **Reversibility**, **Expected Value**, and **Cost Pressure** |
