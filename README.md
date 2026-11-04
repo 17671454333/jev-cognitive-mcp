@@ -120,7 +120,7 @@ python -m unittest discover -s tests -v
 
 ## Security & Reliability Boundaries
 
-- **Pre-Egress Credential DLP Chokepoint**: Both `local_reflex_screen()` and `call_jev()` screen serialized inputs for literal secrets (`sk-*`, `ghp_*`, `glpat-*`, `AKIA*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM private keys, and URL userinfo credentials) and raise `SENSITIVE_INPUT_REJECTED` before `_invoke_bridge()` can be called.
+- **Pre-Egress Credential DLP Chokepoint**: Both `local_reflex_screen()` and `call_jev()` screen serialized inputs for literal secrets (`sk-*`, `ghp_*`, `glpat-*`, `AKIA*`, `sntrys_*`, `s.*`, `Bearer`, `password=`, `secret=`, `api_key=`, `token=`, PEM private keys, and URL userinfo credentials) and raise `SENSITIVE_INPUT_REJECTED` before `_invoke_bridge()` can be called.
 - **Zero Direct Credential Arguments**: `call_jev()` rejects explicit `api_key`, `token`, or `secret` keyword arguments (`DIRECT_CREDENTIALS_DISABLED`).
 - **Advisory Boundary**: Outputs from `jev-cognitive-mcp` are advisory structured signals; host agents must enforce execution blocking and human approval gates.
 - **No Silent Fallbacks**: Timeouts, missing bridge runtimes (`BRIDGE_MISSING`), or malformed responses raise `JevIntegrationError` with explicit `billing_uncertain` tracking rather than defaulting to `ALLOW` or `PASS`.

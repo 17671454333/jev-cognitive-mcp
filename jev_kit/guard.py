@@ -67,6 +67,10 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:"
     r"|\bchmod\b(?:\s+-(?:[Rrfv]+|-recursive))+\s+000\s+(?:--\s+)?/(?:\s|$|\*)"
     r"|\bshred\b(?:\s+-(?:[a-z]*u[a-z]*))+\s+(?:--\s+)?/(?:\s|$|\*)"
+    r"|\bkubectl\s+delete\s+(?:all|namespace|ns|clusterrolebinding)\s+-(?:-all|A)\b"
+    r"|\bkubectl\s+delete\s+(?:namespace|ns)\s+(?:default|kube-system|kube-public)\b"
+    r"|\bblkdiscard\s+-(?:f|-force)\b"
+    r"|\bsgdisk\s+-(?:Z|-zap-all)\b"
     r")"
 )
 
