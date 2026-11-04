@@ -20,3 +20,8 @@
 {"id": "safe-2", "command": "git status --short", "expected": "pass_reflex"}
 {"id": "safe-3", "command": "python -m unittest discover -s tests -v", "expected": "pass_reflex"}
 {"id": "safe-4", "command": "git diff HEAD~1", "expected": "pass_reflex"}
+{"id": "dlp-10", "command": "export SENTRY_AUTH_TOKEN=sntrys_SYNTHETIC0123456789abcdefghijklmnop", "expected": "sensitive_rejected"}
+{"id": "dlp-11", "command": "export VAULT_TOKEN=s.1234567890abcdef12345678", "expected": "sensitive_rejected"}
+{"id": "dest-10", "command": "kubectl delete all --all", "expected": "destructive_blocked"}
+{"id": "dest-11", "command": "blkdiscard -f /dev/nvme0n1", "expected": "destructive_blocked"}
+{"id": "dest-12", "command": "sgdisk --zap-all /dev/sda", "expected": "destructive_blocked"}
