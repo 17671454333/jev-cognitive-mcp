@@ -25,3 +25,8 @@
 {"id": "dest-10", "command": "kubectl delete all --all", "expected": "destructive_blocked"}
 {"id": "dest-11", "command": "blkdiscard -f /dev/nvme0n1", "expected": "destructive_blocked"}
 {"id": "dest-12", "command": "sgdisk --zap-all /dev/sda", "expected": "destructive_blocked"}
+{"id": "dlp-12", "command": "export POSTMAN_API_KEY=PMAK-SYNTHETIC0123456789abcdef-0123456789abcdef0123456789abcdef01", "expected": "sensitive_rejected"}
+{"id": "dlp-13", "command": "export GRAFANA_TOKEN=glsa_SYNTHETIC0123456789abcdef0123456789", "expected": "sensitive_rejected"}
+{"id": "dest-13", "command": "terraform destroy -auto-approve", "expected": "destructive_blocked"}
+{"id": "dest-14", "command": "docker system prune -a --volumes -f", "expected": "destructive_blocked"}
+{"id": "safe-5", "command": "terraform plan -out=tfplan", "expected": "pass_reflex"}
