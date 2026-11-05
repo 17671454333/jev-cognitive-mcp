@@ -71,6 +71,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bkubectl\s+delete\s+(?:namespace|ns)\s+(?:default|kube-system|kube-public)\b"
     r"|\bblkdiscard\s+-(?:f|-force)\b"
     r"|\bsgdisk\s+-(?:Z|-zap-all)\b"
+    r"|\bterraform\s+destroy\b[^\r\n;|]*(?:--?auto-approve|--?force)"
+    r"|\bdocker\s+system\s+prune\b[^\r\n;|]*(?:(?:--?all|-a)\b[^\r\n;|]*(?:--?force|-f|--volumes)\b|(?:--?force|-f)\b[^\r\n;|]*(?:--?all|-a)\b)"
     r")"
 )
 
