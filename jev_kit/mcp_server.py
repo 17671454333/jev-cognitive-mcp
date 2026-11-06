@@ -23,6 +23,7 @@ from .router import route_task, autopilot_select
 from .verifier import verify_completion
 from .reranker import rerank
 from .controller import arbitrate_escalation, ControllerSignals
+from .chrome_live import discover_devtools_active_port, screen_cdp_action
 
 MCP_TOOLS = [
     {
@@ -125,6 +126,19 @@ MCP_TOOLS = [
                 "context_chars": {"type": "integer", "default": 0, "description": "Approximate context character count."},
             },
             "required": ["task_description"],
+        },
+    },
+    {
+        "name": "jev_chrome_guard",
+        "description": "Zero-popup Chrome M144+ DevToolsActivePort discovery and Layer-0 DLP/SSRF pre-screening for live browser CDP automation.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "method": {"type": "string", "default": "Runtime.evaluate", "description": "CDP method name (e.g., Runtime.evaluate, DOM.setFileInputFiles, Page.navigate)."},
+                "params": {"type": "object", "description": "CDP parameters dictionary."},
+                "target_url": {"type": "string", "description": "Optional current or target page URL."},
+                "custom_port_file": {"type": "string", "description": "Optional custom path to DevToolsActivePort."},
+            },
         },
     },
 ]
@@ -314,6 +328,29 @@ def _dispatch_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             "selected_model": plan.selected_model,
             "fallback_models": plan.fallback_models,
             "rationale": plan.rationale,
+        }
+
+    if name == "jev_chrome_guard":
+        endpoint = discover_devtools_active_port(args.get("custom_port_file"))
+        verdict = screen_cdp_action(
+            args.get("method", "Runtime.evaluate"),
+            args.get("params") or {},
+            args.get("target_url"),
+        )
+        return {
+            "ok": True,
+            "advisory": True,
+            "action": verdict.action.value,
+            "safe": verdict.safe,
+            "layer0_triggered": verdict.layer0_triggered,
+            "reasons": verdict.reasons,
+            "recommended_params": verdict.recommended_params,
+            "devtools_endpoint": {
+                "found": endpoint.found,
+                "port": endpoint.port,
+                "ws_url": endpoint.ws_url,
+                "bridge_http_url": endpoint.bridge_http_url,
+            },
         }
 
     raise ValueError(f"Unknown tool: {name}")

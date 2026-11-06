@@ -128,3 +128,22 @@ python -m unittest discover -s tests -v
 ## License
 
 Released under the [MIT License](LICENSE).
+
+
+## Zero-Popup Chrome M144+ Live CDP Guard (`jev_chrome_guard`)
+
+Modern Chrome (M144+) exposes `%LOCALAPPDATA%\Google\Chrome\User Data\DevToolsActivePort` via `chrome://inspect/#remote-debugging`, triggering a native modal prompt on every transient WebSocket handshake. `jev_chrome_guard` provides:
+- **Zero-Popup `DevToolsActivePort` Discovery**: Parses live port and browser WebSocket UUID across Windows, macOS, and Linux without opening transient WebSockets.
+- **Layer-0 CDP DLP & SSRF Pre-Screen**: Blocks accidental `.env` / SSH key file uploads in `DOM.setFileInputFiles`, blocks credential leakage in `Runtime.evaluate`, blocks cloud metadata SSRF (`169.254.169.254`) in `Page.navigate`, and enforces `userGesture: true` to prevent popup blockers.
+
+---
+
+## Open-Core Pro & Commercial Ecosystem
+
+| Capability | Community Core (`jev-cognitive-mcp` · MIT) | Studio Pro Suite (Commercial / Sponsors) |
+| :--- | :--- | :--- |
+| **Layer-0 Shell & CDP Guardrails** | ✅ Included (38-case JSONL benchmark, 0 tokens) | ✅ + Custom Enterprise Policy Packs |
+| **5-Factor Meta-Controller & Autopilot** | ✅ Included (`jev_arbitrate`, `jev_autopilot`) | ✅ + Multi-Key Quota Balancer |
+| **Chrome M144+ Zero-Popup CDP Guard** | ✅ Endpoint Discovery + Layer-0 CDP Screen | ✅ + Persistent Multi-Tab Daemon & Windows UIA Auto-Consent |
+| **8-Platform Matrix Auto-Publisher** | — | 🚀 **Pro Exclusive**: One-click zero-login publishing to YouTube, TikTok, Bilibili, Xiaohongshu, Douyin, WeChat Channels & Kuaishou |
+| **AI Short-Drama & WebGame Studio** | See [`open-short-drama-studio`](https://github.com/17671454333/open-short-drama-studio) | 🚀 **Pro Exclusive**: Cross-shot face-locking, Seedance 85%-credit-saver pipeline, CapCut draft exporter & 6-target WebGame packager |

@@ -44,6 +44,12 @@ from .reranker import (
     ScoredItem,
     RerankError,
 )
+from .chrome_live import (
+    discover_devtools_active_port,
+    screen_cdp_action,
+    ChromeLiveEndpoint,
+    CdpGuardVerdict,
+)
 from .controller import (
     arbitrate_escalation,
     CognitiveLayer,
@@ -81,4 +87,8 @@ __all__ = [
     "CognitiveLayer",
     "ControllerSignals",
     "ArbitrationDecision",
+    "discover_devtools_active_port",
+    "screen_cdp_action",
+    "ChromeLiveEndpoint",
+    "CdpGuardVerdict",
 ]

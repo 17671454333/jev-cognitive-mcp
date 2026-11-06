@@ -326,6 +326,53 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(payload["reasoning_effort"], "high")
         self.assertEqual(payload["context_tier"], "medium")
 
+    def test_chrome_live_guard_and_discovery(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            port_file = os.path.join(tmp, "DevToolsActivePort")
+            with open(port_file, "w", encoding="utf-8") as f:
+                f.write("9222\n/devtools/browser/1234-5678\n")
+            resp = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 10,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Runtime.evaluate",
+                            "params": {"expression": "document.title"},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            self.assertFalse(resp["result"]["isError"])
+            payload = json.loads(resp["result"]["content"][0]["text"])
+            self.assertTrue(payload["safe"])
+            self.assertTrue(payload["devtools_endpoint"]["found"])
+            self.assertEqual(payload["devtools_endpoint"]["port"], 9222)
+            self.assertTrue(payload["recommended_params"]["userGesture"])
+
+            resp_block = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 11,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "DOM.setFileInputFiles",
+                            "params": {"files": ["/home/user/.env"]},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_block = json.loads(resp_block["result"]["content"][0]["text"])
+            self.assertFalse(payload_block["safe"])
+            self.assertEqual(payload_block["action"], "block")
+
 
 if __name__ == "__main__":
     unittest.main()
