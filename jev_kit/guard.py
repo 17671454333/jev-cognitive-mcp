@@ -73,6 +73,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bsgdisk\s+-(?:Z|-zap-all)\b"
     r"|\bterraform\s+destroy\b[^\r\n;|]*(?:--?auto-approve|--?force)"
     r"|\bdocker\s+system\s+prune\b[^\r\n;|]*(?:(?:--?all|-a)\b[^\r\n;|]*(?:--?force|-f|--volumes)\b|(?:--?force|-f)\b[^\r\n;|]*(?:--?all|-a)\b)"
+    r"|\bredis-cli\b[^\r\n;|]*(?:\bFLUSHALL\b|\bFLUSHDB\b)"
+    r"|\baws\s+s3\s+rb\s+s3://[^\s|;&]+[^\r\n;|]*(?:--force\b|--?f\b)"
     r")"
 )
 
