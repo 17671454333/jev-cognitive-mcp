@@ -45,6 +45,9 @@ class TestJevCognitiveMcp(unittest.TestCase):
             "terraform destroy --auto-approve",
             "docker system prune -a --volumes -f",
             "docker system prune -f -a",
+            "redis-cli -h prod-db.internal FLUSHALL ASYNC",
+            "redis-cli FLUSHDB",
+            "aws s3 rb s3://my-bucket --force",
         ]:
             verdict = local_reflex_screen(cmd)
             self.assertIsNotNone(verdict, f"Expected Layer 0 to block: {cmd}")
@@ -71,6 +74,9 @@ class TestJevCognitiveMcp(unittest.TestCase):
             "export VAULT_TOKEN=s.1234567890abcdef12345678",
             "export POSTMAN_API_KEY=PMAK-SYNTHETIC0123456789abcdef-0123456789abcdef0123456789abcdef01",
             "export GRAFANA_TOKEN=glsa_SYNTHETIC0123456789abcdef0123456789",
+            "export LINEAR_API_KEY=lin_api_SYNTHETIC0123456789abcdefghijklmnopqrst",
+            "tailscale up --authkey=tskey-auth-SYNTHETIC0123456789abcdef",
+            "export PULUMI_ACCESS_TOKEN=pul-SYNTHETIC0123456789abcdefghijklmnop",
         ]:
             self.assertTrue(contains_sensitive_credential(secret_cmd), f"Expected DLP match for: {secret_cmd}")
             with self.assertRaises(JevIntegrationError) as ctx:
@@ -294,8 +300,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
 
     def test_layer0_jsonl_replay_benchmark_accuracy(self):
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 32)
-        self.assertEqual(summary["matched"], 32)
+        self.assertEqual(summary["total"], 38)
+        self.assertEqual(summary["matched"], 38)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 

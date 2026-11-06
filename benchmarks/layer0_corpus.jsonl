@@ -30,3 +30,9 @@
 {"id": "dest-13", "command": "terraform destroy -auto-approve", "expected": "destructive_blocked"}
 {"id": "dest-14", "command": "docker system prune -a --volumes -f", "expected": "destructive_blocked"}
 {"id": "safe-5", "command": "terraform plan -out=tfplan", "expected": "pass_reflex"}
+{"id": "dlp-14", "command": "export LINEAR_API_KEY=lin_api_SYNTHETIC0123456789abcdefghijklmnopqrst", "expected": "sensitive_rejected"}
+{"id": "dlp-15", "command": "tailscale up --authkey=tskey-auth-SYNTHETIC0123456789abcdef", "expected": "sensitive_rejected"}
+{"id": "dlp-16", "command": "export PULUMI_ACCESS_TOKEN=pul-SYNTHETIC0123456789abcdefghijklmnop", "expected": "sensitive_rejected"}
+{"id": "dest-15", "command": "redis-cli -h prod-cluster.internal FLUSHALL ASYNC", "expected": "destructive_blocked"}
+{"id": "dest-16", "command": "aws s3 rb s3://production-data-lake-bucket --force", "expected": "destructive_blocked"}
+{"id": "safe-6", "command": "aws s3 ls s3://production-data-lake-bucket", "expected": "pass_reflex"}
