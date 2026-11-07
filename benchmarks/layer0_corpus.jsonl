@@ -36,3 +36,6 @@
 {"id": "dest-15", "command": "redis-cli -h prod-cluster.internal FLUSHALL ASYNC", "expected": "destructive_blocked"}
 {"id": "dest-16", "command": "aws s3 rb s3://production-data-lake-bucket --force", "expected": "destructive_blocked"}
 {"id": "safe-6", "command": "aws s3 ls s3://production-data-lake-bucket", "expected": "pass_reflex"}
+{"id": "dest-17", "command": "Format-Volume -DriveLetter D -Force", "expected": "destructive_blocked"}
+{"id": "dlp-17", "command": "export DEEPSEEK_API_KEY=sk-SYNTHETIC0123456789abcdefghijklmnop", "expected": "sensitive_rejected"}
+{"id": "safe-7", "command": "git log --oneline -n 10", "expected": "pass_reflex"}
