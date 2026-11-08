@@ -47,6 +47,8 @@ _SENSITIVE_CREDENTIAL_PATTERN = re.compile(
     r"|\blin_api_[A-Za-z0-9]{40}\b"
     r"|\btskey-(?:auth|client)-[A-Za-z0-9_-]{20,}\b"
     r"|\bpul-[A-Za-z0-9_-]{40,}\b"
+    r"|\bgsk_[A-Za-z0-9]{40,}\b"
+    r"|\bmis_[A-Za-z0-9_-]{30,}\b"
     r"|-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+|ENCRYPTED\s+)?PRIVATE\s+KEY-----"
     r"|\b[a-z][a-z0-9+.-]{1,20}://[^/\s:@]{1,64}:[^@\s/]{4,128}@"
     r"|\b(?:Bearer|Basic)\s+[A-Za-z0-9._~+/=-]{10,}"

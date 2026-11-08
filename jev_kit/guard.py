@@ -75,6 +75,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bdocker\s+system\s+prune\b[^\r\n;|]*(?:(?:--?all|-a)\b[^\r\n;|]*(?:--?force|-f|--volumes)\b|(?:--?force|-f)\b[^\r\n;|]*(?:--?all|-a)\b)"
     r"|\bredis-cli\b[^\r\n;|]*(?:\bFLUSHALL\b|\bFLUSHDB\b)"
     r"|\baws\s+s3\s+rb\s+s3://[^\s|;&]+[^\r\n;|]*(?:--force\b|--?f\b)"
+    r"|\b(?:psql|mysql|mariadb)\b[^\r\n;|]*(?:-e|-c)\s*['\"][^;'\"]*?\bDROP\s+(?:DATABASE|SCHEMA)\b"
+    r"|\bmongosh?\b[^\r\n;|]*(?:--eval)\s*['\"][^;'\"]*?\bdropDatabase\(\)"
     r")"
 )
 

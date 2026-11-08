@@ -39,3 +39,8 @@
 {"id": "dest-17", "command": "Format-Volume -DriveLetter D -Force", "expected": "destructive_blocked"}
 {"id": "dlp-17", "command": "export DEEPSEEK_API_KEY=sk-SYNTHETIC0123456789abcdefghijklmnop", "expected": "sensitive_rejected"}
 {"id": "safe-7", "command": "git log --oneline -n 10", "expected": "pass_reflex"}
+{"id": "dlp-18", "command": "export GROQ_API_KEY=gsk_SYNTHETIC0123456789abcdefghijklmnopqrstuvwxyz0123456789", "expected": "sensitive_rejected"}
+{"id": "dlp-19", "command": "export MISTRAL_API_KEY=mis_SYNTHETIC0123456789abcdefghijklmn", "expected": "sensitive_rejected"}
+{"id": "dest-18", "command": "psql -U postgres -h db.prod -c \"DROP DATABASE production;\"", "expected": "destructive_blocked"}
+{"id": "dest-19", "command": "mongosh --eval \"db.dropDatabase()\"", "expected": "destructive_blocked"}
+{"id": "safe-8", "command": "mysql -u root -p -e \"SELECT count(*) FROM users;\"", "expected": "pass_reflex"}
