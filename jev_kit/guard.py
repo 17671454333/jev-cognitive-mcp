@@ -77,6 +77,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\baws\s+s3\s+rb\s+s3://[^\s|;&]+[^\r\n;|]*(?:--force\b|--?f\b)"
     r"|\b(?:psql|mysql|mariadb)\b[^\r\n;|]*(?:-e|-c)\s*['\"][^;'\"]*?\bDROP\s+(?:DATABASE|SCHEMA)\b"
     r"|\bmongosh?\b[^\r\n;|]*(?:--eval)\s*['\"][^;'\"]*?\bdropDatabase\(\)"
+    r"|\b(?:nc|netcat|ncat)\b[^\r\n;|]*-e\s+(?:/[a-z0-9_/.-]+/)?(?:ba|z|k)?sh\b"
+    r"|\b(?:ba|z|k)?sh\s+-[a-z0-9]*i[a-z0-9]*\b[^\r\n;|]*>\s*&\s*/dev/tcp/\d"
     r")"
 )
 
