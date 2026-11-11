@@ -37,12 +37,23 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
 
 _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"(?:"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions)|"
+    r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
     r"^https?://metadata\.google\.internal(?:/|$)"
     r")",
     re.IGNORECASE,
+)
+
+_BULK_COOKIE_DUMP_METHODS = frozenset({
+    "Network.getAllCookies",
+    "Storage.getCookies",
+})
+
+_COOKIE_EXFIL_EXPR_PATTERN = re.compile(
+    r"(?is)document\.cookie.*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+Image\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\().*?document\.cookie"
 )
 
 
@@ -125,13 +136,12 @@ def screen_cdp_action(
     clean_params = dict(params or {})
     serialized = json.dumps({"method": method, "params": clean_params, "target_url": target_url or ""}, ensure_ascii=False)
     if contains_sensitive_credential(serialized):
-        raise JevIntegrationError(
-            "Sensitive credential detected in CDP payload; blocked before browser injection.",
-            code="SENSITIVE_INPUT_REJECTED",
-            billing_uncertain=False,
-        )
+        raise JevIntegrationError("SENSITIVE_INPUT_REJECTED", billing_uncertain=False)
 
     reasons: List[str] = []
+    if method in _BULK_COOKIE_DUMP_METHODS:
+        reasons.append(f"CDP method '{method}' blocked: bulk cross-domain cookie harvesting is prohibited.")
+
     if target_url and _FORBIDDEN_BROWSER_TARGET_PATTERN.search(target_url.strip()):
         reasons.append(f"Target URL '{target_url}' matches restricted browser/metadata endpoint.")
 
@@ -139,6 +149,11 @@ def screen_cdp_action(
         nav_url = str(clean_params.get("url", "")).strip()
         if _FORBIDDEN_BROWSER_TARGET_PATTERN.search(nav_url):
             reasons.append(f"Navigation URL '{nav_url}' blocked by Layer-0 SSRF/password-store policy.")
+
+    if method == "Runtime.evaluate":
+        expr = str(clean_params.get("expression", ""))
+        if _COOKIE_EXFIL_EXPR_PATTERN.search(expr):
+            reasons.append("Runtime.evaluate expression blocked: detected document.cookie network exfiltration pattern.")
 
     if method == "DOM.setFileInputFiles":
         files = clean_params.get("files") or []

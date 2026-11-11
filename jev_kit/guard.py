@@ -74,6 +74,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bsgdisk\s+-(?:Z|-zap-all)\b"
     r"|\bterraform\s+destroy\b[^\r\n;|]*(?:--?auto-approve|--?force)"
     r"|\baz\s+group\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
+    r"|\bgcloud\s+projects\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
+    r"|\bgit\s+push\b[^\r\n;|]*(?:--force\b|-f\b)[^\r\n;|]*\b(?:main|master)\b"
     r"|\bdocker\s+system\s+prune\b[^\r\n;|]*(?:(?:--?all|-a)\b[^\r\n;|]*(?:--?force|-f|--volumes)\b|(?:--?force|-f)\b[^\r\n;|]*(?:--?all|-a)\b)"
     r"|\bredis-cli\b[^\r\n;|]*(?:\bFLUSHALL\b|\bFLUSHDB\b)"
     r"|\baws\s+s3\s+rb\s+s3://[^\s|;&]+[^\r\n;|]*(?:--force\b|--?f\b)"
