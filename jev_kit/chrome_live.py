@@ -29,7 +29,8 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"credentials(?:\.json|\.db|\.xml)?|"
     r"\.git-credentials|"
     r"\.npmrc|\.pypirc|\.netrc|"
-    r"cookies\.sqlite|Login\s*Data|"
+    r"cookies\.sqlite|Login\s*Data|Local\s*State|Web\s*Data|"
+    r"terraform\.tfstate(?:\.backup)?|\.kube[/\\]config|kubeconfig|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -40,7 +41,9 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
+    r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
+    r"^https?://(?:\[fd00:ec2::254\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://metadata\.google\.internal(?:/|$)"
     r")",
     re.IGNORECASE,
@@ -52,8 +55,13 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)document\.cookie.*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+Image\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\().*?document\.cookie"
+    r"(?is)document\.cookie.*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?document\.cookie"
+)
+
+_WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
+    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b).*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b)"
 )
 
 
@@ -154,6 +162,8 @@ def screen_cdp_action(
         expr = str(clean_params.get("expression", ""))
         if _COOKIE_EXFIL_EXPR_PATTERN.search(expr):
             reasons.append("Runtime.evaluate expression blocked: detected document.cookie network exfiltration pattern.")
+        if _WEB_STORAGE_EXFIL_EXPR_PATTERN.search(expr):
+            reasons.append("Runtime.evaluate expression blocked: detected localStorage/sessionStorage network exfiltration pattern.")
 
     if method == "DOM.setFileInputFiles":
         files = clean_params.get("files") or []

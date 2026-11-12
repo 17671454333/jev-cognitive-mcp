@@ -83,6 +83,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bmongosh?\b[^\r\n;|]*(?:--eval)\s*['\"][^;'\"]*?\bdropDatabase\(\)"
     r"|\b(?:nc|netcat|ncat)\b[^\r\n;|]*-e\s+(?:/[a-z0-9_/.-]+/)?(?:ba|z|k)?sh\b"
     r"|\b(?:ba|z|k)?sh\s+-[a-z0-9]*i[a-z0-9]*\b[^\r\n;|]*>\s*&\s*/dev/tcp/\d"
+    r"|\baws\s+rds\s+delete-db-(?:instance|cluster)\b[^\r\n;|]*--skip-final-snapshot\b"
+    r"|\bvssadmin\s+delete\s+shadows\b[^\r\n;|]*/all\b"
     r")"
 )
 

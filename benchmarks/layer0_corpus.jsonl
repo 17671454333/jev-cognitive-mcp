@@ -58,3 +58,8 @@
 {"id": "dest-23", "command": "gcloud projects delete prod-billing-core --quiet", "expected": "destructive_blocked"}
 {"id": "dest-24", "command": "git push --force origin main", "expected": "destructive_blocked"}
 {"id": "safe-11", "command": "git push origin feat/add-cdp-cookie-guard", "expected": "pass_reflex"}
+{"id": "dlp-26", "command": "echo AGE-SECRET-KEY-1SYNTHETIC0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABC", "expected": "sensitive_rejected"}
+{"id": "dlp-27", "command": "echo whsec_SYNTHETIC_0123456789abcdef0123456789", "expected": "sensitive_rejected"}
+{"id": "dest-25", "command": "aws rds delete-db-instance --db-instance-identifier prod-core-db --skip-final-snapshot", "expected": "destructive_blocked"}
+{"id": "dest-26", "command": "vssadmin delete shadows /all /quiet", "expected": "destructive_blocked"}
+{"id": "safe-12", "command": "aws rds describe-db-instances --db-instance-identifier prod-core-db", "expected": "pass_reflex"}
