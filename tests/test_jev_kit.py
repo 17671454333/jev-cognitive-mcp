@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.2")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.3")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -304,8 +304,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
 
     def test_layer0_jsonl_replay_benchmark_accuracy(self):
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 65)
-        self.assertEqual(summary["matched"], 65)
+        self.assertEqual(summary["total"], 70)
+        self.assertEqual(summary["matched"], 70)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -494,6 +494,64 @@ class TestJevCognitiveMcp(unittest.TestCase):
             payload_tfstate = json.loads(resp_tfstate["result"]["content"][0]["text"])
             self.assertFalse(payload_tfstate["safe"])
             self.assertEqual(payload_tfstate["action"], "block")
+
+            resp_clipboard = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 18,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Runtime.evaluate",
+                            "params": {"expression": "navigator.clipboard.readText()"},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_clipboard = json.loads(resp_clipboard["result"]["content"][0]["text"])
+            self.assertFalse(payload_clipboard["safe"])
+            self.assertEqual(payload_clipboard["action"], "block")
+            self.assertNotIn("userGesture", payload_clipboard["recommended_params"])
+
+            resp_dom_storage = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 19,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "DOMStorage.getDOMStorageItems",
+                            "params": {"storageId": {"securityOrigin": "https://app.example.com", "isLocalStorage": True}},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_dom_storage = json.loads(resp_dom_storage["result"]["content"][0]["text"])
+            self.assertFalse(payload_dom_storage["safe"])
+            self.assertEqual(payload_dom_storage["action"], "block")
+
+            resp_cookie_hdr = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 20,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Network.setExtraHTTPHeaders",
+                            "params": {"headers": {"Cookie": "SID=session_override_demo"}},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_cookie_hdr = json.loads(resp_cookie_hdr["result"]["content"][0]["text"])
+            self.assertFalse(payload_cookie_hdr["safe"])
+            self.assertEqual(payload_cookie_hdr["action"], "block")
 
 
 if __name__ == "__main__":

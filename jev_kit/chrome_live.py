@@ -52,6 +52,8 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
 _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.getAllCookies",
     "Storage.getCookies",
+    "DOMStorage.getDOMStorageItems",
+    "IndexedDB.requestData",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -60,9 +62,18 @@ _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
 )
 
 _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b).*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b)"
+    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b).*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b)"
 )
+
+_CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
+    r"(?is)\bnavigator\.clipboard\.read(?:Text)?\s*\("
+)
+
+_FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
+    "cookie",
+    "proxy-authorization",
+})
 
 
 @dataclass
@@ -163,7 +174,16 @@ def screen_cdp_action(
         if _COOKIE_EXFIL_EXPR_PATTERN.search(expr):
             reasons.append("Runtime.evaluate expression blocked: detected document.cookie network exfiltration pattern.")
         if _WEB_STORAGE_EXFIL_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: detected localStorage/sessionStorage network exfiltration pattern.")
+            reasons.append("Runtime.evaluate expression blocked: detected localStorage/sessionStorage/indexedDB network exfiltration pattern.")
+        if _CLIPBOARD_HARVEST_EXPR_PATTERN.search(expr):
+            reasons.append("Runtime.evaluate expression blocked: clipboard read access via CDP is prohibited.")
+
+    if method == "Network.setExtraHTTPHeaders":
+        headers = clean_params.get("headers") or {}
+        if isinstance(headers, dict):
+            for hname in headers:
+                if str(hname).strip().lower() in _FORBIDDEN_EXTRA_HEADER_NAMES:
+                    reasons.append(f"Network.setExtraHTTPHeaders blocked: overriding sensitive '{hname}' header is prohibited.")
 
     if method == "DOM.setFileInputFiles":
         files = clean_params.get("files") or []

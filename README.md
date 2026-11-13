@@ -134,7 +134,7 @@ Released under the [MIT License](LICENSE).
 
 Modern Chrome (M144+) exposes `%LOCALAPPDATA%\Google\Chrome\User Data\DevToolsActivePort` via `chrome://inspect/#remote-debugging`, triggering a native modal prompt on every transient WebSocket handshake. `jev_chrome_guard` provides:
 - **Zero-Popup `DevToolsActivePort` Discovery**: Parses live port and browser WebSocket UUID across Windows, macOS, and Linux without opening transient WebSockets.
-- **Layer-0 CDP DLP & SSRF Pre-Screen**: Blocks accidental `.env` / SSH key / `.kube/config` / `terraform.tfstate` / Chrome `Local State` file uploads in `DOM.setFileInputFiles`, blocks `document.cookie` & `localStorage`/`sessionStorage` network exfiltration in `Runtime.evaluate`, blocks `file://` browser profile vault reads and cloud metadata SSRF (`169.254.169.254`, `[fd00:ec2::254]`, `100.100.100.200`) in `Page.navigate`, and enforces `userGesture: true` to prevent popup blockers.
+- **Layer-0 CDP DLP & SSRF Pre-Screen**: Blocks accidental `.env` / SSH key / `.kube/config` / `terraform.tfstate` / Chrome `Local State` file uploads in `DOM.setFileInputFiles`, blocks `document.cookie`, `localStorage`/`sessionStorage`/`indexedDB` network exfiltration and `navigator.clipboard.readText()` harvesting in `Runtime.evaluate`, blocks bulk `DOMStorage`/`IndexedDB`/cookie dumps and `Cookie`/`Proxy-Authorization` header overrides, blocks `file://` browser profile vault reads and cloud metadata SSRF (`169.254.169.254`, `[fd00:ec2::254]`, `100.100.100.200`) in `Page.navigate`, and enforces `userGesture: true` on safe evaluations to prevent popup blockers.
 
 ---
 
@@ -142,7 +142,7 @@ Modern Chrome (M144+) exposes `%LOCALAPPDATA%\Google\Chrome\User Data\DevToolsAc
 
 | Capability | Community Core (`jev-cognitive-mcp` · MIT) | Studio Pro Suite (Commercial / Sponsors) |
 | :--- | :--- | :--- |
-| **Layer-0 Shell & CDP Guardrails** | ✅ Included (65-case JSONL benchmark, 0 tokens) | ✅ + Custom Enterprise Policy Packs |
+| **Layer-0 Shell & CDP Guardrails** | ✅ Included (70-case JSONL benchmark, 0 tokens) | ✅ + Custom Enterprise Policy Packs |
 | **5-Factor Meta-Controller & Autopilot** | ✅ Included (`jev_arbitrate`, `jev_autopilot`) | ✅ + Multi-Key Quota Balancer |
 | **Chrome M144+ Zero-Popup CDP Guard** | ✅ Endpoint Discovery + Layer-0 CDP Screen | ✅ + Persistent Multi-Tab Daemon & Windows UIA Auto-Consent |
 | **8-Platform Matrix Auto-Publisher** | — | 🚀 **Pro Exclusive**: One-click zero-login publishing to YouTube, TikTok, Bilibili, Xiaohongshu, Douyin, WeChat Channels & Kuaishou |

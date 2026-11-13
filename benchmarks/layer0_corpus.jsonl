@@ -63,3 +63,8 @@
 {"id": "dest-25", "command": "aws rds delete-db-instance --db-instance-identifier prod-core-db --skip-final-snapshot", "expected": "destructive_blocked"}
 {"id": "dest-26", "command": "vssadmin delete shadows /all /quiet", "expected": "destructive_blocked"}
 {"id": "safe-12", "command": "aws rds describe-db-instances --db-instance-identifier prod-core-db", "expected": "pass_reflex"}
+{"id": "dlp-28", "command": "export FIGMA_ACCESS_TOKEN=figd_SYNTHETIC_0123456789abcdefghijklmnopqrstuvwxyz", "expected": "sensitive_rejected"}
+{"id": "dlp-29", "command": "export PERPLEXITY_API_KEY=pplx-SYNTHETIC0123456789abcdefghijklmn", "expected": "sensitive_rejected"}
+{"id": "dest-27", "command": "gh repo delete org/core-service --yes", "expected": "destructive_blocked"}
+{"id": "dest-28", "command": "crontab -r", "expected": "destructive_blocked"}
+{"id": "safe-13", "command": "crontab -l", "expected": "pass_reflex"}
