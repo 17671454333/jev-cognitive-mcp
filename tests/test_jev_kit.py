@@ -303,6 +303,12 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(parsed["mcpServers"]["jev-cognitive"]["args"], [])
 
     def test_layer0_jsonl_replay_benchmark_accuracy(self):
+        from pathlib import Path
+        repo_corpus = Path("benchmarks/layer0_corpus.jsonl")
+        pkg_corpus = Path("jev_kit/data/layer0_corpus.jsonl")
+        self.assertTrue(pkg_corpus.is_file())
+        self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
+
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
         self.assertEqual(summary["total"], 75)
         self.assertEqual(summary["matched"], 75)

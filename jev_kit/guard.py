@@ -217,7 +217,12 @@ def check_command_safety(command: str, context: Optional[str] = None) -> GuardVe
 
 def run_layer0_benchmark(jsonl_path: Union[str, Path]) -> Dict[str, Any]:
     """Run deterministic offline JSONL replay benchmark over Layer-0 DLP & destructive reflex rules."""
+    raw_str = str(jsonl_path)
     path = Path(jsonl_path)
+    if not path.is_file() and raw_str.replace("\\", "/") == "benchmarks/layer0_corpus.jsonl":
+        packaged = Path(__file__).resolve().parent / "data" / "layer0_corpus.jsonl"
+        if packaged.is_file():
+            path = packaged
     if not path.is_file():
         raise JevIntegrationError("INPUT_INVALID")
 
