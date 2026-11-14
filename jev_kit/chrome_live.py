@@ -54,11 +54,16 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Storage.getCookies",
     "DOMStorage.getDOMStorageItems",
     "IndexedDB.requestData",
+    "Fetch.enable",
+    "Network.setRequestInterception",
+    "Network.setCookie",
+    "Network.setCookies",
+    "Storage.setCookies",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)document\.cookie.*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?document\.cookie"
+    r"(?is)(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\()"
 )
 
 _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
@@ -68,6 +73,16 @@ _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
 
 _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
     r"(?is)\bnavigator\.clipboard\.read(?:Text)?\s*\("
+)
+
+_CREDENTIAL_CONTAINER_EXPR_PATTERN = re.compile(
+    r"(?is)\bnavigator\.credentials\.get\s*\("
+)
+
+_FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
+    r"(?:^|[/\\])\.\.(?:[/\\]|$)"
+    r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|Startup|System32|etc|root)(?:[/\\]|$)",
+    re.IGNORECASE,
 )
 
 _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
@@ -172,11 +187,18 @@ def screen_cdp_action(
     if method == "Runtime.evaluate":
         expr = str(clean_params.get("expression", ""))
         if _COOKIE_EXFIL_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: detected document.cookie network exfiltration pattern.")
+            reasons.append("Runtime.evaluate expression blocked: detected cookie/cookieStore network exfiltration pattern.")
         if _WEB_STORAGE_EXFIL_EXPR_PATTERN.search(expr):
             reasons.append("Runtime.evaluate expression blocked: detected localStorage/sessionStorage/indexedDB network exfiltration pattern.")
         if _CLIPBOARD_HARVEST_EXPR_PATTERN.search(expr):
             reasons.append("Runtime.evaluate expression blocked: clipboard read access via CDP is prohibited.")
+        if _CREDENTIAL_CONTAINER_EXPR_PATTERN.search(expr):
+            reasons.append("Runtime.evaluate expression blocked: navigator.credentials access via CDP is prohibited.")
+
+    if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
+        dl_path = str(clean_params.get("downloadPath", "")).strip()
+        if dl_path and _FORBIDDEN_DOWNLOAD_PATH_PATTERN.search(dl_path):
+            reasons.append(f"{method} blocked: downloadPath '{dl_path}' targets restricted system/credential directory or path traversal.")
 
     if method == "Network.setExtraHTTPHeaders":
         headers = clean_params.get("headers") or {}

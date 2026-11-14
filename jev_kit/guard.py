@@ -87,6 +87,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bvssadmin\s+delete\s+shadows\b[^\r\n;|]*/all\b"
     r"|\bgh\s+repo\s+delete\b[^\r\n;|]*(?:--yes\b|--confirm\b)"
     r"|\bcrontab\s+-(?:[a-z]*r[a-z]*)\b"
+    r"|\bprisma\s+migrate\s+reset\b[^\r\n;|]*(?:--force\b|-f\b)"
+    r"|\bsupabase\s+db\s+reset\b[^\r\n;|]*--linked\b"
     r")"
 )
 

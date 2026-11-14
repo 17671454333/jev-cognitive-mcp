@@ -71,6 +71,6 @@ args = []
 
 1. **免重启 `DevToolsActivePort` 发现与 CDP 零弹窗安全守卫 (`jev_chrome_guard`)**：
    - 自动解析 Windows / macOS / Linux 下 Chrome M144+ 的 `DevToolsActivePort`，不发起短命 WebSocket 握手（杜绝重复弹出「允许远程调试」确认框）。
-   - 在调用常驻桥接（`http://127.0.0.1:19876`）前，通过 Layer-0 确定性拦截 `DOM.setFileInputFiles` 误传 `.env`/私钥/`.kube/config`/`terraform.tfstate`、`Runtime.evaluate` 中的 `document.cookie` 与 `localStorage`/`sessionStorage`/`indexedDB` 外发窃密及 `navigator.clipboard.readText()` 剪贴板读取、批量 `DOMStorage`/`IndexedDB` 导出、`Network.setExtraHTTPHeaders` 伪造 `Cookie`/`Proxy-Authorization` 请求头，以及 `Page.navigate` 浏览器本地凭据库（`Login Data`/`Local State`）读取与云元数据 SSRF，并在合规表达式上自动补齐 `userGesture: true`。
+   - 在调用常驻桥接（`http://127.0.0.1:19876`）前，通过 Layer-0 确定性拦截 `DOM.setFileInputFiles` 误传 `.env`/私钥/`.kube/config`/`terraform.tfstate`、`Runtime.evaluate` 中的 `document.cookie`/`cookieStore.getAll()` 与 `localStorage`/`sessionStorage`/`indexedDB` 外发窃密、`navigator.clipboard.readText()` 剪贴板读取与 `navigator.credentials.get()` 凭据容器读取、批量 `DOMStorage`/`IndexedDB` 导出与 `Fetch.enable`/`Network.setCookie` 劫持、`Browser.setDownloadBehavior` 敏感目录写入、`Network.setExtraHTTPHeaders` 伪造 `Cookie`/`Proxy-Authorization` 请求头，以及 `Page.navigate` 浏览器本地凭据库（`Login Data`/`Local State`）读取与云元数据 SSRF，并在合规表达式上自动补齐 `userGesture: true`。
 2. **姊妹开源项目与 Pro 商业套件**：
    - 🎬 **[`open-short-drama-studio`](https://github.com/17671454333/open-short-drama-studio)**：AI 漫剧/短剧 14 道质量门禁、分镜时长预算计算器、剪映/CapCut 草稿时间轴生成与网页游戏六端打包体检工具（Open-Core 架构）。

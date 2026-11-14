@@ -68,3 +68,8 @@
 {"id": "dest-27", "command": "gh repo delete org/core-service --yes", "expected": "destructive_blocked"}
 {"id": "dest-28", "command": "crontab -r", "expected": "destructive_blocked"}
 {"id": "safe-13", "command": "crontab -l", "expected": "pass_reflex"}
+{"id": "dlp-30", "command": "export REPLICATE_API_TOKEN=r8_SYNTHETIC0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dlp-31", "command": "export NOTION_TOKEN=ntn_SYNTHETIC0123456789abcdefghijklmnopqrstuvwxyz01", "expected": "sensitive_rejected"}
+{"id": "dest-29", "command": "npx prisma migrate reset --force", "expected": "destructive_blocked"}
+{"id": "dest-30", "command": "supabase db reset --linked", "expected": "destructive_blocked"}
+{"id": "safe-14", "command": "npx prisma migrate status", "expected": "pass_reflex"}
