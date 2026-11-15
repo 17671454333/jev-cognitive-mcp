@@ -89,6 +89,9 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bcrontab\s+-(?:[a-z]*r[a-z]*)\b"
     r"|\bprisma\s+migrate\s+reset\b[^\r\n;|]*(?:--force\b|-f\b)"
     r"|\bsupabase\s+db\s+reset\b[^\r\n;|]*--linked\b"
+    r"|\bdocker\s+volume\s+prune\b[^\r\n;|]*(?:--?force\b|-f\b)"
+    r"|\bfly(?:ctl)?\s+apps\s+destroy\b[^\r\n;|]*(?:--?yes\b|-y\b)"
+    r"|\bwrangler\s+d1\s+delete\b[^\r\n;|]*(?:--?skip-confirmation\b|--?yes\b|-y\b)"
     r")"
 )
 

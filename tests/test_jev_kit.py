@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.4")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.5")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 75)
-        self.assertEqual(summary["matched"], 75)
+        self.assertEqual(summary["total"], 80)
+        self.assertEqual(summary["matched"], 80)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -655,6 +655,65 @@ class TestJevCognitiveMcp(unittest.TestCase):
             payload_dl_ok = json.loads(resp_dl_ok["result"]["content"][0]["text"])
             self.assertTrue(payload_dl_ok["safe"])
             self.assertEqual(payload_dl_ok["action"], "allow")
+
+            resp_persist = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 26,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Page.addScriptToEvaluateOnNewDocument",
+                            "params": {"source": "window.__hook = true;"},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_persist = json.loads(resp_persist["result"]["content"][0]["text"])
+            self.assertFalse(payload_persist["safe"])
+            self.assertEqual(payload_persist["action"], "block")
+
+            resp_callfn = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 27,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Runtime.callFunctionOn",
+                            "params": {
+                                "functionDeclaration": "function() { return navigator.serviceWorker.register('/evil-sw.js'); }"
+                            },
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_callfn = json.loads(resp_callfn["result"]["content"][0]["text"])
+            self.assertFalse(payload_callfn["safe"])
+            self.assertEqual(payload_callfn["action"], "block")
+
+            resp_target_ssrf = handle_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 28,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jev_chrome_guard",
+                        "arguments": {
+                            "method": "Target.createTarget",
+                            "params": {"url": "http://169.254.169.254/latest/meta-data/"},
+                            "custom_port_file": port_file,
+                        },
+                    },
+                }
+            )
+            payload_target_ssrf = json.loads(resp_target_ssrf["result"]["content"][0]["text"])
+            self.assertFalse(payload_target_ssrf["safe"])
+            self.assertEqual(payload_target_ssrf["action"], "block")
 
 
 if __name__ == "__main__":

@@ -73,3 +73,8 @@
 {"id": "dest-29", "command": "npx prisma migrate reset --force", "expected": "destructive_blocked"}
 {"id": "dest-30", "command": "supabase db reset --linked", "expected": "destructive_blocked"}
 {"id": "safe-14", "command": "npx prisma migrate status", "expected": "pass_reflex"}
+{"id": "dlp-32", "command": "export TAVILY_API_KEY=tvly-SYNTHETIC0123456789abcdefghijkl", "expected": "sensitive_rejected"}
+{"id": "dlp-33", "command": "export FLY_API_TOKEN=fo1_SYNTHETIC0123456789abcdefghijklmnopqrst", "expected": "sensitive_rejected"}
+{"id": "dest-31", "command": "docker volume prune --force", "expected": "destructive_blocked"}
+{"id": "dest-32", "command": "flyctl apps destroy prod-billing-api --yes", "expected": "destructive_blocked"}
+{"id": "safe-15", "command": "docker volume ls", "expected": "pass_reflex"}

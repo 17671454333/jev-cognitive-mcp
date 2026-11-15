@@ -59,6 +59,11 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.setCookie",
     "Network.setCookies",
     "Storage.setCookies",
+    "Page.addScriptToEvaluateOnNewDocument",
+    "Page.addScriptToEvaluateOnLoad",
+    "Runtime.addBinding",
+    "Security.setIgnoreCertificateErrors",
+    "Security.setOverrideCertificateErrors",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -77,6 +82,10 @@ _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
 
 _CREDENTIAL_CONTAINER_EXPR_PATTERN = re.compile(
     r"(?is)\bnavigator\.credentials\.get\s*\("
+)
+
+_SERVICE_WORKER_PERSIST_EXPR_PATTERN = re.compile(
+    r"(?is)\bnavigator\.serviceWorker\.register\s*\("
 )
 
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
@@ -179,21 +188,24 @@ def screen_cdp_action(
     if target_url and _FORBIDDEN_BROWSER_TARGET_PATTERN.search(target_url.strip()):
         reasons.append(f"Target URL '{target_url}' matches restricted browser/metadata endpoint.")
 
-    if method == "Page.navigate":
+    if method in ("Page.navigate", "Target.createTarget"):
         nav_url = str(clean_params.get("url", "")).strip()
         if _FORBIDDEN_BROWSER_TARGET_PATTERN.search(nav_url):
             reasons.append(f"Navigation URL '{nav_url}' blocked by Layer-0 SSRF/password-store policy.")
 
-    if method == "Runtime.evaluate":
-        expr = str(clean_params.get("expression", ""))
+    if method in ("Runtime.evaluate", "Runtime.callFunctionOn"):
+        expr_key = "expression" if method == "Runtime.evaluate" else "functionDeclaration"
+        expr = str(clean_params.get(expr_key, ""))
         if _COOKIE_EXFIL_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: detected cookie/cookieStore network exfiltration pattern.")
+            reasons.append(f"{method} payload blocked: detected cookie/cookieStore network exfiltration pattern.")
         if _WEB_STORAGE_EXFIL_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: detected localStorage/sessionStorage/indexedDB network exfiltration pattern.")
+            reasons.append(f"{method} payload blocked: detected localStorage/sessionStorage/indexedDB network exfiltration pattern.")
         if _CLIPBOARD_HARVEST_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: clipboard read access via CDP is prohibited.")
+            reasons.append(f"{method} payload blocked: clipboard read access via CDP is prohibited.")
         if _CREDENTIAL_CONTAINER_EXPR_PATTERN.search(expr):
-            reasons.append("Runtime.evaluate expression blocked: navigator.credentials access via CDP is prohibited.")
+            reasons.append(f"{method} payload blocked: navigator.credentials access via CDP is prohibited.")
+        if _SERVICE_WORKER_PERSIST_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: persistent ServiceWorker registration via CDP is prohibited.")
 
     if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
         dl_path = str(clean_params.get("downloadPath", "")).strip()
