@@ -92,6 +92,9 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bdocker\s+volume\s+prune\b[^\r\n;|]*(?:--?force\b|-f\b)"
     r"|\bfly(?:ctl)?\s+apps\s+destroy\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r"|\bwrangler\s+d1\s+delete\b[^\r\n;|]*(?:--?skip-confirmation\b|--?yes\b|-y\b)"
+    r"|\bpulumi\s+destroy\b[^\r\n;|]*(?:--?yes\b|-y\b)"
+    r"|\bvercel\s+(?:rm|remove)\b[^\r\n;|]*(?:--?yes\b|-y\b)"
+    r"|\bturso\s+db\s+destroy\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r")"
 )
 

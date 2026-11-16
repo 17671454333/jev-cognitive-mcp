@@ -78,3 +78,8 @@
 {"id": "dest-31", "command": "docker volume prune --force", "expected": "destructive_blocked"}
 {"id": "dest-32", "command": "flyctl apps destroy prod-billing-api --yes", "expected": "destructive_blocked"}
 {"id": "safe-15", "command": "docker volume ls", "expected": "pass_reflex"}
+{"id": "dlp-34", "command": "export LANGSMITH_API_KEY=lsv2_pt_SYNTHETIC0123456789abcdef0123456789", "expected": "sensitive_rejected"}
+{"id": "dlp-35", "command": "export VERCEL_TOKEN=vcp_SYNTHETIC0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dest-33", "command": "pulumi destroy --stack prod --yes", "expected": "destructive_blocked"}
+{"id": "dest-34", "command": "vercel remove prod-dashboard --yes", "expected": "destructive_blocked"}
+{"id": "safe-16", "command": "pulumi preview --stack staging", "expected": "pass_reflex"}
