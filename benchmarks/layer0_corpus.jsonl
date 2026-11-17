@@ -83,3 +83,8 @@
 {"id": "dest-33", "command": "pulumi destroy --stack prod --yes", "expected": "destructive_blocked"}
 {"id": "dest-34", "command": "vercel remove prod-dashboard --yes", "expected": "destructive_blocked"}
 {"id": "safe-16", "command": "pulumi preview --stack staging", "expected": "pass_reflex"}
+{"id": "dlp-36", "command": "echo xai-SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-37", "command": "echo pcsk_SYNTHETIC_0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dest-35", "command": "railway delete --service prod-gateway --yes", "expected": "destructive_blocked"}
+{"id": "dest-36", "command": "doctl databases delete prod-pg-cluster --force", "expected": "destructive_blocked"}
+{"id": "safe-17", "command": "railway status", "expected": "pass_reflex"}

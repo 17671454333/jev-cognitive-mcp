@@ -32,6 +32,8 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"cookies\.sqlite|Login\s*Data|Local\s*State|Web\s*Data|"
     r"terraform\.tfstate(?:\.backup)?|\.kube[/\\]config|kubeconfig|"
     r"\.aws[/\\](?:credentials|config)|\.docker[/\\]config\.json|gh[/\\]hosts\.yml|"
+    r"\.codex[/\\]auth\.json|\.claude[/\\]\.credentials\.json|"
+    r"\.config[/\\]gcloud[/\\](?:application_default_credentials\.json|credentials\.db)|\.azure[/\\]accessTokens\.json|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -40,13 +42,15 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
 _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"(?:"
     r"^javascript:|"
+    r"^data:text/html|"
     r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
+    r"^https?://(?:2852039166|0xa9fea9fe|0251\.0376\.0251\.0376)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[::ffff:169\.254\.169\.254\]|100\.100\.100\.200)(?:/|$)|"
-    r"^https?://metadata\.google\.internal(?:/|$)"
+    r"^https?://metadata\.(?:google\.internal|goog)(?:/|$)"
     r")",
     re.IGNORECASE,
 )
@@ -58,11 +62,23 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "IndexedDB.requestData",
     "CacheStorage.requestEntries",
     "CacheStorage.requestCachedResponse",
+    "Network.getResponseBody",
+    "Network.getRequestPostData",
+    "Fetch.takeResponseBodyAsStream",
     "Fetch.enable",
     "Network.setRequestInterception",
     "Network.setCookie",
     "Network.setCookies",
     "Storage.setCookies",
+    "Storage.clearDataForOrigin",
+    "Storage.clearCookies",
+    "Network.clearBrowserCookies",
+    "Debugger.setScriptSource",
+    "Debugger.evaluateOnCallFrame",
+    "Tracing.start",
+    "WebAuthn.enable",
+    "WebAuthn.addVirtualAuthenticator",
+    "WebAuthn.getCredentials",
     "Page.addScriptToEvaluateOnNewDocument",
     "Page.addScriptToEvaluateOnLoad",
     "Page.setBypassCSP",
@@ -76,13 +92,13 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\()"
+    r"(?is)(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\().*?(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\()"
 )
 
 _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\()"
+    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\()"
 )
 
 _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
@@ -101,6 +117,10 @@ _FILESYSTEM_PICKER_EXPR_PATTERN = re.compile(
     r"(?is)\b(?:window\.)?show(?:OpenFile|SaveFile|Directory)Picker\s*\(|\bnavigator\.storage\.getDirectory\s*\("
 )
 
+_HARDWARE_PAYMENT_EXPR_PATTERN = re.compile(
+    r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnew\s+PaymentRequest\s*\("
+)
+
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
     r"(?:^|[/\\])\.\.(?:[/\\]|$)"
     r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|Startup|System32|etc|root)(?:[/\\]|$)",
@@ -110,6 +130,8 @@ _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
 _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "cookie",
     "proxy-authorization",
+    "authorization",
+    "x-api-key",
 })
 
 
@@ -221,6 +243,8 @@ def screen_cdp_action(
             reasons.append(f"{method} payload blocked: persistent ServiceWorker registration via CDP is prohibited.")
         if _FILESYSTEM_PICKER_EXPR_PATTERN.search(expr):
             reasons.append(f"{method} payload blocked: File System Access API / OPFS directory access via CDP is prohibited.")
+        if _HARDWARE_PAYMENT_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: WebUSB/WebHID/WebSerial/WebBluetooth/PaymentRequest access via CDP is prohibited.")
 
     if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
         dl_path = str(clean_params.get("downloadPath", "")).strip()
