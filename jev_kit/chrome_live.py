@@ -25,10 +25,12 @@ from .guard import GuardAction
 _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"(?:^|[/\\])(?:"
     r"\.env(?:\.[a-zA-Z0-9._-]+)?|"
-    r"id_(?:rsa|ed25519|ecdsa|dsa)(?:\.pub)?|"
+    r"id_(?:rsa|ed25519|ecdsa|dsa)(?:_sk)?(?:\.pub)?|"
     r"credentials(?:\.json|\.db|\.xml)?|"
     r"\.git-credentials|"
-    r"\.npmrc|\.pypirc|\.netrc|"
+    r"\.npmrc|\.pypirc|\.netrc|\.vault-token|\.yarnrc\.yml|"
+    r"\.cargo[/\\]credentials(?:\.toml)?|\.gem[/\\]credentials|"
+    r"secrets\.(?:ya?ml|json|toml)|"
     r"cookies\.sqlite|Login\s*Data|Local\s*State|Web\s*Data|"
     r"terraform\.tfstate(?:\.backup)?|\.kube[/\\]config|kubeconfig|"
     r"\.aws[/\\](?:credentials|config)|\.docker[/\\]config\.json|gh[/\\]hosts\.yml|"
@@ -43,11 +45,14 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"(?:"
     r"^javascript:|"
     r"^data:text/html|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect)|"
+    r"^devtools://|"
+    r"^view-source:file://|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|flags)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
+    r"^https?://(?:169\.254\.170\.2|168\.63\.129\.16)(?:/|$)|"
     r"^https?://(?:2852039166|0xa9fea9fe|0251\.0376\.0251\.0376)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[::ffff:169\.254\.169\.254\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://metadata\.(?:google\.internal|goog)(?:/|$)"
@@ -66,6 +71,7 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.getRequestPostData",
     "Fetch.takeResponseBodyAsStream",
     "Fetch.enable",
+    "Audits.getEncodedResponse",
     "Network.setRequestInterception",
     "Network.setCookie",
     "Network.setCookies",
@@ -76,6 +82,13 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Debugger.setScriptSource",
     "Debugger.evaluateOnCallFrame",
     "Tracing.start",
+    "Page.startScreencast",
+    "SystemInfo.getProcessInfo",
+    "Target.exposeDevToolsProtocol",
+    "Target.setAutoAttach",
+    "Extensions.loadUnpacked",
+    "Extensions.getStorageItems",
+    "Extensions.setStorageItems",
     "WebAuthn.enable",
     "WebAuthn.addVirtualAuthenticator",
     "WebAuthn.getCredentials",
@@ -101,6 +114,10 @@ _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
     r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\()"
 )
 
+_REDIRECT_EXFIL_EXPR_PATTERN = re.compile(
+    r"(?is)(?:(?:window\.)?location\.(?:assign|replace)\s*\(|(?:window\.)?location(?:\.href)?\s*=).*?(?:document\.cookie|\bcookieStore\b|\blocalStorage\b|\bsessionStorage\b)"
+)
+
 _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
     r"(?is)\bnavigator\.clipboard\.read(?:Text)?\s*\("
 )
@@ -121,9 +138,13 @@ _HARDWARE_PAYMENT_EXPR_PATTERN = re.compile(
     r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnew\s+PaymentRequest\s*\("
 )
 
+_MEDIA_CAPTURE_EXPR_PATTERN = re.compile(
+    r"(?is)\bnavigator\.mediaDevices\.get(?:Display|User)Media\s*\("
+)
+
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
     r"(?:^|[/\\])\.\.(?:[/\\]|$)"
-    r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|Startup|System32|etc|root)(?:[/\\]|$)",
+    r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|\.codex|\.claude|cron\.d|systemd|Startup|System32|etc|root)(?:[/\\]|$)",
     re.IGNORECASE,
 )
 
@@ -132,6 +153,8 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "proxy-authorization",
     "authorization",
     "x-api-key",
+    "x-amz-security-token",
+    "x-goog-api-key",
 })
 
 
@@ -245,6 +268,10 @@ def screen_cdp_action(
             reasons.append(f"{method} payload blocked: File System Access API / OPFS directory access via CDP is prohibited.")
         if _HARDWARE_PAYMENT_EXPR_PATTERN.search(expr):
             reasons.append(f"{method} payload blocked: WebUSB/WebHID/WebSerial/WebBluetooth/PaymentRequest access via CDP is prohibited.")
+        if _REDIRECT_EXFIL_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: top-level location redirect cookie/storage exfiltration is prohibited.")
+        if _MEDIA_CAPTURE_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: silent getDisplayMedia/getUserMedia screen or mic capture via CDP is prohibited.")
 
     if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
         dl_path = str(clean_params.get("downloadPath", "")).strip()

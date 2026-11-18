@@ -88,3 +88,8 @@
 {"id": "dest-35", "command": "railway delete --service prod-gateway --yes", "expected": "destructive_blocked"}
 {"id": "dest-36", "command": "doctl databases delete prod-pg-cluster --force", "expected": "destructive_blocked"}
 {"id": "safe-17", "command": "railway status", "expected": "pass_reflex"}
+{"id": "dlp-38", "command": "export VAULT_TOKEN=hvs.CAESIJSYNTHETIC0123456789abcdefghijk", "expected": "sensitive_rejected"}
+{"id": "dlp-39", "command": "export NEON_API_KEY=napi_SYNTHETIC0123456789abcdefghijklmnopqrstuvwxyz", "expected": "sensitive_rejected"}
+{"id": "dest-37", "command": "gcloud sql instances delete prod-ledger-db --quiet", "expected": "destructive_blocked"}
+{"id": "dest-38", "command": "heroku apps:destroy --app prod-checkout-api --confirm prod-checkout-api", "expected": "destructive_blocked"}
+{"id": "safe-18", "command": "gcloud sql instances list", "expected": "pass_reflex"}

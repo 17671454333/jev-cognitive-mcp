@@ -8,7 +8,7 @@ Implements an advisory 3+1 cognitive hierarchy for coding agents (Codex, Claude 
 - Meta-Controller: 5-factor arbitration (Confidence, Risk, Reversibility, Value, Cost)
 """
 
-__version__ = "0.4.7"
+__version__ = "0.4.8"
 
 from .core import (
     call_jev,

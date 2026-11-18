@@ -97,6 +97,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bturso\s+db\s+destroy\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r"|\brailway\s+(?:delete|down)\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r"|\bdoctl\s+(?:compute\s+droplet|databases)\s+delete\b[^\r\n;|]*(?:--?force\b|-f\b)"
+    r"|\bheroku\s+apps:destroy\b[^\r\n;|]*--confirm\b"
+    r"|\bgcloud\s+sql\s+instances\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
     r")"
 )
 
