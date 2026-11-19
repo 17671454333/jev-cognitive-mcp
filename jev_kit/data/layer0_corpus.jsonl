@@ -93,3 +93,8 @@
 {"id": "dest-37", "command": "gcloud sql instances delete prod-ledger-db --quiet", "expected": "destructive_blocked"}
 {"id": "dest-38", "command": "heroku apps:destroy --app prod-checkout-api --confirm prod-checkout-api", "expected": "destructive_blocked"}
 {"id": "safe-18", "command": "gcloud sql instances list", "expected": "pass_reflex"}
+{"id": "dlp-40", "command": "export GRAFANA_TOKEN=glc_SYNTHETIC_0123456789abcdefghijklmnopqrstuvwxyz", "expected": "sensitive_rejected"}
+{"id": "dlp-41", "command": "export POSTHOG_PERSONAL_KEY=phx_SYNTHETIC_0123456789abcdefghijklmnopqrstuvwxyz", "expected": "sensitive_rejected"}
+{"id": "dest-39", "command": "gcloud storage rm --recursive gs://prod-customer-backups", "expected": "destructive_blocked"}
+{"id": "dest-40", "command": "pscale database delete prod-ledger --force", "expected": "destructive_blocked"}
+{"id": "safe-19", "command": "gcloud storage ls gs://staging-artifacts", "expected": "pass_reflex"}

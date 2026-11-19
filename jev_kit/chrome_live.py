@@ -36,6 +36,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.aws[/\\](?:credentials|config)|\.docker[/\\]config\.json|gh[/\\]hosts\.yml|"
     r"\.codex[/\\]auth\.json|\.claude[/\\]\.credentials\.json|"
     r"\.config[/\\]gcloud[/\\](?:application_default_credentials\.json|credentials\.db)|\.azure[/\\]accessTokens\.json|"
+    r"\.pgpass|\.my\.cnf|\.boto|\.databrickscfg|key4\.db|logins\.json|age[/\\]keys\.txt|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -47,13 +48,14 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^data:text/html|"
     r"^devtools://|"
     r"^view-source:file://|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|flags)|"
+    r"^about:config|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
     r"^https?://(?:169\.254\.170\.2|168\.63\.129\.16)(?:/|$)|"
-    r"^https?://(?:2852039166|0xa9fea9fe|0251\.0376\.0251\.0376)(?:/|$)|"
+    r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[::ffff:169\.254\.169\.254\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://metadata\.(?:google\.internal|goog)(?:/|$)"
     r")",
@@ -81,6 +83,13 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.clearBrowserCookies",
     "Debugger.setScriptSource",
     "Debugger.evaluateOnCallFrame",
+    "HeapProfiler.takeHeapSnapshot",
+    "HeapProfiler.getObjectByHeapObjectId",
+    "Runtime.queryObjects",
+    "DOMSnapshot.captureSnapshot",
+    "Page.captureSnapshot",
+    "FedCm.enable",
+    "FedCm.selectAccount",
     "Tracing.start",
     "Page.startScreencast",
     "SystemInfo.getProcessInfo",
@@ -142,6 +151,10 @@ _MEDIA_CAPTURE_EXPR_PATTERN = re.compile(
     r"(?is)\bnavigator\.mediaDevices\.get(?:Display|User)Media\s*\("
 )
 
+_WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
+    r"(?is)\bnew\s+(?:webkit)?RTCPeerConnection\s*\(|\bpushManager\.subscribe\s*\("
+)
+
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
     r"(?:^|[/\\])\.\.(?:[/\\]|$)"
     r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|\.codex|\.claude|cron\.d|systemd|Startup|System32|etc|root)(?:[/\\]|$)",
@@ -155,6 +168,8 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-api-key",
     "x-amz-security-token",
     "x-goog-api-key",
+    "cf-access-client-secret",
+    "x-supabase-key",
 })
 
 
@@ -272,6 +287,8 @@ def screen_cdp_action(
             reasons.append(f"{method} payload blocked: top-level location redirect cookie/storage exfiltration is prohibited.")
         if _MEDIA_CAPTURE_EXPR_PATTERN.search(expr):
             reasons.append(f"{method} payload blocked: silent getDisplayMedia/getUserMedia screen or mic capture via CDP is prohibited.")
+        if _WEBRTC_PUSH_EXFIL_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: WebRTC STUN/TURN leak or PushManager subscription persistence via CDP is prohibited.")
 
     if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
         dl_path = str(clean_params.get("downloadPath", "")).strip()

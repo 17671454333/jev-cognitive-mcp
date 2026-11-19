@@ -99,6 +99,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bdoctl\s+(?:compute\s+droplet|databases)\s+delete\b[^\r\n;|]*(?:--?force\b|-f\b)"
     r"|\bheroku\s+apps:destroy\b[^\r\n;|]*--confirm\b"
     r"|\bgcloud\s+sql\s+instances\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
+    r"|\bgcloud\s+storage\s+rm\b[^\r\n;|]*(?:--recursive\b|-r\b)\s+gs://"
+    r"|\bpscale\s+database\s+delete\b[^\r\n;|]*--force\b"
     r")"
 )
 
