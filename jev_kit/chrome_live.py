@@ -28,9 +28,9 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"id_(?:rsa|ed25519|ecdsa|dsa)(?:_sk)?(?:\.pub)?|"
     r"credentials(?:\.json|\.db|\.xml)?|"
     r"\.git-credentials|"
-    r"\.npmrc|\.pypirc|\.netrc|\.vault-token|\.yarnrc\.yml|"
-    r"\.cargo[/\\]credentials(?:\.toml)?|\.gem[/\\]credentials|"
-    r"secrets\.(?:ya?ml|json|toml)|"
+    r"\.npmrc|\.pypirc|\.netrc|\.vault-token|\.yarnrc\.yml|\.envrc|\.terraformrc|"
+    r"\.cargo[/\\]credentials(?:\.toml)?|\.gem[/\\]credentials|\.fly[/\\]config\.yml|\.composer[/\\]auth\.json|"
+    r"secrets\.(?:ya?ml|json|toml)|master\.key|"
     r"cookies\.sqlite|Login\s*Data|Local\s*State|Web\s*Data|"
     r"terraform\.tfstate(?:\.backup)?|\.kube[/\\]config|kubeconfig|"
     r"\.aws[/\\](?:credentials|config)|\.docker[/\\]config\.json|gh[/\\]hosts\.yml|"
@@ -49,13 +49,13 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
-    r"^https?://(?:169\.254\.170\.2|168\.63\.129\.16)(?:/|$)|"
-    r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376)(?:/|$)|"
+    r"^https?://(?:169\.254\.170\.2|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
+    r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376|0251\.254\.169\.254)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[::ffff:169\.254\.169\.254\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://metadata\.(?:google\.internal|goog)(?:/|$)"
     r")",
@@ -90,6 +90,15 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Page.captureSnapshot",
     "FedCm.enable",
     "FedCm.selectAccount",
+    "DeviceAccess.enable",
+    "DeviceAccess.selectPrompt",
+    "BluetoothEmulation.enable",
+    "BackgroundService.startObserving",
+    "BackgroundService.setRecording",
+    "Autofill.trigger",
+    "Autofill.setAddresses",
+    "PWA.install",
+    "PWA.launch",
     "Tracing.start",
     "Page.startScreencast",
     "SystemInfo.getProcessInfo",
@@ -114,13 +123,13 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\().*?(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\()"
+    r"(?is)(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource|BroadcastChannel)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource|BroadcastChannel)\s*\().*?(?:document\.cookie|\bcookieStore\.(?:get|getAll)\s*\()"
 )
 
 _WEB_STORAGE_EXFIL_EXPR_PATTERN = re.compile(
-    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\()"
-    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\()"
+    r"(?is)(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\().*?(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource|BroadcastChannel)\s*\()"
+    r"|(?:\bfetch\s*\(|\bXMLHttpRequest\b|navigator\.sendBeacon\s*\(|new\s+(?:Image|WebSocket|WebTransport|EventSource|BroadcastChannel)\s*\().*?(?:\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|\bcaches\.(?:open|match|keys)\s*\()"
 )
 
 _REDIRECT_EXFIL_EXPR_PATTERN = re.compile(
@@ -155,6 +164,10 @@ _WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
     r"(?is)\bnew\s+(?:webkit)?RTCPeerConnection\s*\(|\bpushManager\.subscribe\s*\("
 )
 
+_PRIVACY_SENSOR_EXPR_PATTERN = re.compile(
+    r"(?is)\bnew\s+EyeDropper\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\("
+)
+
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
     r"(?:^|[/\\])\.\.(?:[/\\]|$)"
     r"|(?:^|[/\\])(?:\.ssh|\.gnupg|\.aws|\.kube|\.codex|\.claude|cron\.d|systemd|Startup|System32|etc|root)(?:[/\\]|$)",
@@ -170,6 +183,9 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-goog-api-key",
     "cf-access-client-secret",
     "x-supabase-key",
+    "x-gitlab-token",
+    "x-vercel-protection-bypass",
+    "x-hub-signature-256",
 })
 
 
@@ -289,6 +305,8 @@ def screen_cdp_action(
             reasons.append(f"{method} payload blocked: silent getDisplayMedia/getUserMedia screen or mic capture via CDP is prohibited.")
         if _WEBRTC_PUSH_EXFIL_EXPR_PATTERN.search(expr):
             reasons.append(f"{method} payload blocked: WebRTC STUN/TURN leak or PushManager subscription persistence via CDP is prohibited.")
+        if _PRIVACY_SENSOR_EXPR_PATTERN.search(expr):
+            reasons.append(f"{method} payload blocked: EyeDropper pixel sampling, ContactsManager, or multi-screen topology access via CDP is prohibited.")
 
     if method in ("Browser.setDownloadBehavior", "Page.setDownloadBehavior"):
         dl_path = str(clean_params.get("downloadPath", "")).strip()

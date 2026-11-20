@@ -101,6 +101,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bgcloud\s+sql\s+instances\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
     r"|\bgcloud\s+storage\s+rm\b[^\r\n;|]*(?:--recursive\b|-r\b)\s+gs://"
     r"|\bpscale\s+database\s+delete\b[^\r\n;|]*--force\b"
+    r"|\bsupabase\s+projects\s+delete\b[^\r\n;|]*(?:--?yes\b|-y\b)"
+    r"|\baz\s+storage\s+account\s+delete\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r")"
 )
 

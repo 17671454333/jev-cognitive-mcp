@@ -98,3 +98,8 @@
 {"id": "dest-39", "command": "gcloud storage rm --recursive gs://prod-customer-backups", "expected": "destructive_blocked"}
 {"id": "dest-40", "command": "pscale database delete prod-ledger --force", "expected": "destructive_blocked"}
 {"id": "safe-19", "command": "gcloud storage ls gs://staging-artifacts", "expected": "pass_reflex"}
+{"id": "dlp-42", "command": "export BUILDKITE_TOKEN=bkua_SYNTHETIC0123456789abcdefghijklmnopqrstuvwx", "expected": "sensitive_rejected"}
+{"id": "dlp-43", "command": "export SRC_ACCESS_TOKEN=sgp_SYNTHETIC_0123456789abcdefghijklmnopqrstuvwxyz", "expected": "sensitive_rejected"}
+{"id": "dest-41", "command": "supabase projects delete prod-tenant-ref --yes", "expected": "destructive_blocked"}
+{"id": "dest-42", "command": "az storage account delete --name prodvaultstore --yes", "expected": "destructive_blocked"}
+{"id": "safe-20", "command": "az storage account list --output table", "expected": "pass_reflex"}

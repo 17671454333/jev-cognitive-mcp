@@ -76,6 +76,8 @@ _SENSITIVE_CREDENTIAL_PATTERN = re.compile(
     r"|\bnapi_[A-Za-z0-9_]{36,}\b"
     r"|\bglc_[A-Za-z0-9+/=_-]{32,}\b"
     r"|\bphx_[A-Za-z0-9_]{32,}\b"
+    r"|\bbkua_[A-Za-z0-9]{36,}\b"
+    r"|\bsgp_[A-Za-z0-9_]{32,}\b"
     r"|\bpat[A-Za-z0-9]{14}\.[a-f0-9]{64}\b"
     r"|\"type\"\s*:\s*\"service_account\""
     r"|-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+|ENCRYPTED\s+)?PRIVATE\s+KEY-----"
