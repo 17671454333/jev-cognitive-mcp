@@ -103,6 +103,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bpscale\s+database\s+delete\b[^\r\n;|]*--force\b"
     r"|\bsupabase\s+projects\s+delete\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r"|\baz\s+storage\s+account\s+delete\b[^\r\n;|]*(?:--?yes\b|-y\b)"
+    r"|\baws\s+dynamodb\s+delete-table\b[^\r\n;|]*--table-name\b"
+    r"|\bkubectl\s+delete\s+(?:pvc|pv|persistentvolumeclaim|persistentvolume)\b[^\r\n;|]*-(?:-all|A)\b"
     r")"
 )
 

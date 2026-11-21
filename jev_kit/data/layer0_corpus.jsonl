@@ -103,3 +103,8 @@
 {"id": "dest-41", "command": "supabase projects delete prod-tenant-ref --yes", "expected": "destructive_blocked"}
 {"id": "dest-42", "command": "az storage account delete --name prodvaultstore --yes", "expected": "destructive_blocked"}
 {"id": "safe-20", "command": "az storage account list --output table", "expected": "pass_reflex"}
+{"id": "dlp-44", "command": "echo dp.st.prod_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-45", "command": "echo squ_0123456789abcdef0123456789abcdef01234567", "expected": "sensitive_rejected"}
+{"id": "dest-43", "command": "aws dynamodb delete-table --table-name prod-user-sessions", "expected": "destructive_blocked"}
+{"id": "dest-44", "command": "kubectl delete pvc --all -n production", "expected": "destructive_blocked"}
+{"id": "safe-21", "command": "kubectl get pvc -n production", "expected": "pass_reflex"}
