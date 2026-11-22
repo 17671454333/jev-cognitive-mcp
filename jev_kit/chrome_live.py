@@ -38,6 +38,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.config[/\\]gcloud[/\\](?:application_default_credentials\.json|credentials\.db)|\.azure[/\\]accessTokens\.json|"
     r"\.pgpass|\.my\.cnf|\.boto|\.databrickscfg|key4\.db|logins\.json|age[/\\]keys\.txt|"
     r"\.pulumi[/\\]credentials\.json|\.wrangler[/\\]config[/\\]default\.toml|glab-cli[/\\]config\.yml|"
+    r"\.huggingface[/\\]token|\.railway[/\\]config\.json|\.config[/\\]doctl[/\\]config\.yaml|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -50,15 +51,15 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
-    r"^https?://(?:169\.254\.170\.2|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
+    r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
     r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376|0251\.254\.169\.254)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[(?:0:0:0:0:0:ffff|::ffff):(?:169\.254\.169\.254|a9fe:a9fe)\]|100\.100\.100\.200)(?:/|$)|"
-    r"^https?://metadata\.(?:google\.internal|goog)(?:/|$)"
+    r"^https?://metadata(?:\.(?:google\.internal|goog))?(?:/|$)"
     r")",
     re.IGNORECASE,
 )
@@ -67,6 +68,9 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.getAllCookies",
     "Storage.getCookies",
     "Storage.getSharedStorageEntries",
+    "Storage.getTrustTokens",
+    "Storage.clearTrustTokens",
+    "Storage.runBounceTrackingMitigations",
     "DOMStorage.getDOMStorageItems",
     "IndexedDB.requestData",
     "CacheStorage.requestEntries",
@@ -74,6 +78,8 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "FileSystem.getDirectory",
     "Network.getResponseBody",
     "Network.getRequestPostData",
+    "Network.loadNetworkResource",
+    "Network.enableReportingApi",
     "Fetch.takeResponseBodyAsStream",
     "Fetch.enable",
     "Audits.getEncodedResponse",
@@ -92,6 +98,8 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "DOMSnapshot.captureSnapshot",
     "Page.captureSnapshot",
     "Page.setSPCTransactionMode",
+    "Cast.enable",
+    "Cast.startTabMirroring",
     "FedCm.enable",
     "FedCm.selectAccount",
     "DeviceAccess.enable",
@@ -146,7 +154,7 @@ _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
 )
 
 _CREDENTIAL_CONTAINER_EXPR_PATTERN = re.compile(
-    r"(?is)\bnavigator\.credentials\.get\s*\(|\bquerySelector(?:All)?\s*\(\s*['\"][^'\"]*type\s*=\s*['\"]?password\b"
+    r"(?is)\bnavigator\.credentials\.(?:get|create|store)\s*\(|\bquerySelector(?:All)?\s*\(\s*['\"][^'\"]*type\s*=\s*['\"]?password\b"
 )
 
 _SERVICE_WORKER_PERSIST_EXPR_PATTERN = re.compile(
@@ -170,7 +178,7 @@ _WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
 )
 
 _PRIVACY_SENSOR_EXPR_PATTERN = re.compile(
-    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\("
+    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\("
 )
 
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
@@ -193,6 +201,9 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-vercel-protection-bypass",
     "x-hub-signature-256",
     "stripe-signature",
+    "x-slack-signature",
+    "x-shopify-hmac-sha256",
+    "x-datadog-api-key",
 })
 
 

@@ -105,6 +105,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\baz\s+storage\s+account\s+delete\b[^\r\n;|]*(?:--?yes\b|-y\b)"
     r"|\baws\s+dynamodb\s+delete-table\b[^\r\n;|]*--table-name\b"
     r"|\bkubectl\s+delete\s+(?:pvc|pv|persistentvolumeclaim|persistentvolume)\b[^\r\n;|]*-(?:-all|A)\b"
+    r"|\bhelm\s+uninstall\b[^\r\n;|]*\s-(?:n|-namespace)\s+(?:kube-system|production|prod)\b"
+    r"|\baws\s+eks\s+delete-cluster\b[^\r\n;|]*--name\b"
     r")"
 )
 

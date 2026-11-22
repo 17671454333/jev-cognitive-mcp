@@ -108,3 +108,8 @@
 {"id": "dest-43", "command": "aws dynamodb delete-table --table-name prod-user-sessions", "expected": "destructive_blocked"}
 {"id": "dest-44", "command": "kubectl delete pvc --all -n production", "expected": "destructive_blocked"}
 {"id": "safe-21", "command": "kubectl get pvc -n production", "expected": "pass_reflex"}
+{"id": "dlp-46", "command": "export GITLAB_RUNNER_TOKEN=glrt-SYNTHETIC0123456789abcdefgh", "expected": "sensitive_rejected"}
+{"id": "dlp-47", "command": "export TFE_TOKEN=SYNTHETIC01234.atlasv1.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123", "expected": "sensitive_rejected"}
+{"id": "dest-45", "command": "helm uninstall core-billing -n production", "expected": "destructive_blocked"}
+{"id": "dest-46", "command": "aws eks delete-cluster --name prod-eks-main", "expected": "destructive_blocked"}
+{"id": "safe-22", "command": "helm list -n production", "expected": "pass_reflex"}

