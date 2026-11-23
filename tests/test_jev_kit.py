@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.2")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.3")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 115)
-        self.assertEqual(summary["matched"], 115)
+        self.assertEqual(summary["total"], 120)
+        self.assertEqual(summary["matched"], 120)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -781,6 +781,16 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("Target.createTarget", {"url": "chrome://policy"}),
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.huggingface/token", "/home/alice/.railway/config.json"]}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"X-Datadog-Api-Key": "internal-key-override"}}),
+                    ("Network.replayXHR", {"requestId": "req-transfer-1"}),
+                    ("Browser.executeBrowserCommand", {"commandId": "closeTabSearch"}),
+                    ("SmartCardEmulation.enable", {}),
+                    ("Storage.trackIndexedDBForOrigin", {"origin": "https://vault.example"}),
+                    ("Runtime.evaluate", {"expression": "navigator.smartCard.establishContext()"}),
+                    ("Runtime.evaluate", {"expression": "document.domain = 'parent.example'"}),
+                    ("Page.navigate", {"url": "https://kubernetes.default.svc.cluster.local/api/v1/secrets"}),
+                    ("Target.createTarget", {"url": "chrome://attribution-internals"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.modal.toml", "/home/alice/.vercel/auth.json"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"CF-Access-JWT-Assertion": "forged-jwt"}}),
                 ],
                 start=29,
             ):

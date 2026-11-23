@@ -39,6 +39,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.pgpass|\.my\.cnf|\.boto|\.databrickscfg|key4\.db|logins\.json|age[/\\]keys\.txt|"
     r"\.pulumi[/\\]credentials\.json|\.wrangler[/\\]config[/\\]default\.toml|glab-cli[/\\]config\.yml|"
     r"\.huggingface[/\\]token|\.railway[/\\]config\.json|\.config[/\\]doctl[/\\]config\.yaml|"
+    r"\.modal\.toml|\.s3cfg|\.vercel[/\\]auth\.json|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -51,7 +52,7 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
@@ -59,6 +60,7 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
     r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376|0251\.254\.169\.254)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[(?:0:0:0:0:0:ffff|::ffff):(?:169\.254\.169\.254|a9fe:a9fe)\]|100\.100\.100\.200)(?:/|$)|"
+    r"^https?://kubernetes\.default(?:\.svc(?:\.cluster\.local)?)?(?:/|$)|"
     r"^https?://metadata(?:\.(?:google\.internal|goog))?(?:/|$)"
     r")",
     re.IGNORECASE,
@@ -133,6 +135,12 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Security.setIgnoreCertificateErrors",
     "Security.setOverrideCertificateErrors",
     "Security.handleCertificateError",
+    "Network.replayXHR",
+    "Browser.executeBrowserCommand",
+    "Browser.addPrivacySandboxEnrollmentOverride",
+    "SmartCardEmulation.enable",
+    "Storage.trackIndexedDBForOrigin",
+    "Storage.trackCacheStorageForOrigin",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -154,7 +162,7 @@ _CLIPBOARD_HARVEST_EXPR_PATTERN = re.compile(
 )
 
 _CREDENTIAL_CONTAINER_EXPR_PATTERN = re.compile(
-    r"(?is)\bnavigator\.credentials\.(?:get|create|store)\s*\(|\bquerySelector(?:All)?\s*\(\s*['\"][^'\"]*type\s*=\s*['\"]?password\b"
+    r"(?is)\bnavigator\.credentials\.(?:get|create|store)\s*\(|\bquerySelector(?:All)?\s*\(\s*['\"][^'\"]*type\s*=\s*['\"]?password\b|\bdocument\.domain\s*="
 )
 
 _SERVICE_WORKER_PERSIST_EXPR_PATTERN = re.compile(
@@ -166,7 +174,7 @@ _FILESYSTEM_PICKER_EXPR_PATTERN = re.compile(
 )
 
 _HARDWARE_PAYMENT_EXPR_PATTERN = re.compile(
-    r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnew\s+PaymentRequest\s*\("
+    r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnavigator\.smartCard\.establishContext\s*\(|\bnew\s+PaymentRequest\s*\("
 )
 
 _MEDIA_CAPTURE_EXPR_PATTERN = re.compile(
@@ -204,6 +212,9 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-slack-signature",
     "x-shopify-hmac-sha256",
     "x-datadog-api-key",
+    "x-sentry-auth",
+    "x-algolia-api-key",
+    "cf-access-jwt-assertion",
 })
 
 

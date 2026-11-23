@@ -113,3 +113,8 @@
 {"id": "dest-45", "command": "helm uninstall core-billing -n production", "expected": "destructive_blocked"}
 {"id": "dest-46", "command": "aws eks delete-cluster --name prod-eks-main", "expected": "destructive_blocked"}
 {"id": "safe-22", "command": "helm list -n production", "expected": "pass_reflex"}
+{"id": "dlp-48", "command": "export FIRECRAWL_API_KEY=fc-SYNTHETIC_0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-49", "command": "export MAPBOX_SECRET_TOKEN=sk.eyJSWU5USEVUSUNfTUFQQk9YX1RPS0VO.0123456789abcdefABCDEF", "expected": "sensitive_rejected"}
+{"id": "dest-47", "command": "gcloud container clusters delete prod-gke-autopilot --quiet", "expected": "destructive_blocked"}
+{"id": "dest-48", "command": "az aks delete --name prod-aks-cluster --resource-group rg-prod --yes", "expected": "destructive_blocked"}
+{"id": "safe-23", "command": "gcloud container clusters list", "expected": "pass_reflex"}

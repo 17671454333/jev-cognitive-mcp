@@ -142,7 +142,7 @@ Modern Chrome (M144+) exposes `%LOCALAPPDATA%\Google\Chrome\User Data\DevToolsAc
 
 | Capability | Community Core (`jev-cognitive-mcp` · MIT) | Studio Pro Suite (Commercial / Sponsors) |
 | :--- | :--- | :--- |
-| **Layer-0 Shell & CDP Guardrails** | ✅ Included (115-case JSONL benchmark, 0 tokens) | ✅ + Custom Enterprise Policy Packs |
+| **Layer-0 Shell & CDP Guardrails** | ✅ Included (120-case JSONL benchmark, 0 tokens) | ✅ + Custom Enterprise Policy Packs |
 | **5-Factor Meta-Controller & Autopilot** | ✅ Included (`jev_arbitrate`, `jev_autopilot`) | ✅ + Multi-Key Quota Balancer |
 | **Chrome M144+ Zero-Popup CDP Guard** | ✅ Endpoint Discovery + Layer-0 CDP Screen | ✅ + Persistent Multi-Tab Daemon & Windows UIA Auto-Consent |
 | **8-Platform Matrix Auto-Publisher** | — | 🚀 **Pro Exclusive**: One-click zero-login publishing to YouTube, TikTok, Bilibili, Xiaohongshu, Douyin, WeChat Channels & Kuaishou |

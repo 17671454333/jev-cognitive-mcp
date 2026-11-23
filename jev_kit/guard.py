@@ -107,6 +107,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bkubectl\s+delete\s+(?:pvc|pv|persistentvolumeclaim|persistentvolume)\b[^\r\n;|]*-(?:-all|A)\b"
     r"|\bhelm\s+uninstall\b[^\r\n;|]*\s-(?:n|-namespace)\s+(?:kube-system|production|prod)\b"
     r"|\baws\s+eks\s+delete-cluster\b[^\r\n;|]*--name\b"
+    r"|\bgcloud\s+container\s+clusters\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
+    r"|\baz\s+aks\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
     r")"
 )
 
