@@ -118,3 +118,8 @@
 {"id": "dest-47", "command": "gcloud container clusters delete prod-gke-autopilot --quiet", "expected": "destructive_blocked"}
 {"id": "dest-48", "command": "az aks delete --name prod-aks-cluster --resource-group rg-prod --yes", "expected": "destructive_blocked"}
 {"id": "safe-23", "command": "gcloud container clusters list", "expected": "pass_reflex"}
+{"id": "dlp-50", "command": "echo llx-SYNTHETIC_0123456789abcdefghijklmnopqrstuvwxyz0123", "expected": "sensitive_rejected"}
+{"id": "dlp-51", "command": "echo e2b_SYNTHETIC_0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dest-49", "command": "aws secretsmanager delete-secret --secret-id prod/db/master --force-delete-without-recovery", "expected": "destructive_blocked"}
+{"id": "dest-50", "command": "vault secrets disable secret/production/", "expected": "destructive_blocked"}
+{"id": "safe-24", "command": "aws secretsmanager list-secrets --max-results 10", "expected": "pass_reflex"}

@@ -40,6 +40,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.pulumi[/\\]credentials\.json|\.wrangler[/\\]config[/\\]default\.toml|glab-cli[/\\]config\.yml|"
     r"\.huggingface[/\\]token|\.railway[/\\]config\.json|\.config[/\\]doctl[/\\]config\.yaml|"
     r"\.modal\.toml|\.s3cfg|\.vercel[/\\]auth\.json|"
+    r"\.sentryclirc|\.supabase[/\\]access-token|\.config[/\\]op[/\\]config|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -52,15 +53,16 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals|topics-internals|private-aggregation-internals|connectors-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
-    r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
+    r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|169\.254\.169\.250|169\.254\.42\.42|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
     r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376|0251\.254\.169\.254)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[(?:0:0:0:0:0:ffff|::ffff):(?:169\.254\.169\.254|a9fe:a9fe)\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://kubernetes\.default(?:\.svc(?:\.cluster\.local)?)?(?:/|$)|"
+    r"^https?://rancher-metadata(?:\.rancher\.internal)?(?:/|$)|"
     r"^https?://metadata(?:\.(?:google\.internal|goog))?(?:/|$)"
     r")",
     re.IGNORECASE,
@@ -74,7 +76,9 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Storage.clearTrustTokens",
     "Storage.runBounceTrackingMitigations",
     "DOMStorage.getDOMStorageItems",
+    "DOMStorage.setDOMStorageItem",
     "IndexedDB.requestData",
+    "IndexedDB.requestDatabaseNames",
     "CacheStorage.requestEntries",
     "CacheStorage.requestCachedResponse",
     "FileSystem.getDirectory",
@@ -94,6 +98,9 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Network.clearBrowserCookies",
     "Debugger.setScriptSource",
     "Debugger.evaluateOnCallFrame",
+    "EventBreakpoints.setInstrumentationBreakpoint",
+    "DOMDebugger.setXHRBreakpoint",
+    "DOMDebugger.setEventListenerBreakpoint",
     "HeapProfiler.takeHeapSnapshot",
     "HeapProfiler.getObjectByHeapObjectId",
     "Runtime.queryObjects",
@@ -141,6 +148,7 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "SmartCardEmulation.enable",
     "Storage.trackIndexedDBForOrigin",
     "Storage.trackCacheStorageForOrigin",
+    "Storage.overrideQuotaForOrigin",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -174,7 +182,7 @@ _FILESYSTEM_PICKER_EXPR_PATTERN = re.compile(
 )
 
 _HARDWARE_PAYMENT_EXPR_PATTERN = re.compile(
-    r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnavigator\.smartCard\.establishContext\s*\(|\bnew\s+PaymentRequest\s*\("
+    r"(?is)\bnavigator\.(?:usb|hid|bluetooth)\.requestDevice\s*\(|\bnavigator\.serial\.requestPort\s*\(|\bnavigator\.smartCard\.establishContext\s*\(|\bnavigator\.requestMIDIAccess\s*\(|\bnew\s+PaymentRequest\s*\("
 )
 
 _MEDIA_CAPTURE_EXPR_PATTERN = re.compile(
@@ -186,7 +194,7 @@ _WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
 )
 
 _PRIVACY_SENSOR_EXPR_PATTERN = re.compile(
-    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\("
+    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\(|\bnavigator\.geolocation\.(?:getCurrentPosition|watchPosition)\s*\(|\bdocument\.requestStorageAccess(?:For)?\s*\("
 )
 
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
@@ -215,6 +223,8 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-sentry-auth",
     "x-algolia-api-key",
     "cf-access-jwt-assertion",
+    "x-vault-token",
+    "x-consul-token",
 })
 
 

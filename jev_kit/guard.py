@@ -109,6 +109,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\baws\s+eks\s+delete-cluster\b[^\r\n;|]*--name\b"
     r"|\bgcloud\s+container\s+clusters\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
     r"|\baz\s+aks\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
+    r"|\baws\s+secretsmanager\s+delete-secret\b[^\r\n;|]*--force-delete-without-recovery\b"
+    r"|\bvault\s+secrets\s+disable\b"
     r")"
 )
 

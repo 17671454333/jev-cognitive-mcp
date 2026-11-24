@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.3")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.4")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 120)
-        self.assertEqual(summary["matched"], 120)
+        self.assertEqual(summary["total"], 125)
+        self.assertEqual(summary["matched"], 125)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -791,6 +791,17 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("Target.createTarget", {"url": "chrome://attribution-internals"}),
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.modal.toml", "/home/alice/.vercel/auth.json"]}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"CF-Access-JWT-Assertion": "forged-jwt"}}),
+                    ("EventBreakpoints.setInstrumentationBreakpoint", {"eventName": "clipboard"}),
+                    ("DOMDebugger.setXHRBreakpoint", {"url": "/api/auth"}),
+                    ("IndexedDB.requestDatabaseNames", {"securityOrigin": "https://vault.example"}),
+                    ("DOMStorage.setDOMStorageItem", {"storageId": {}, "key": "session", "value": "hijack"}),
+                    ("Runtime.evaluate", {"expression": "navigator.requestMIDIAccess({sysex: true})"}),
+                    ("Runtime.evaluate", {"expression": "document.requestStorageAccess()"}),
+                    ("Runtime.evaluate", {"expression": "navigator.geolocation.getCurrentPosition(console.log)"}),
+                    ("Page.navigate", {"url": "http://169.254.169.250/openstack/latest/meta_data.json"}),
+                    ("Target.createTarget", {"url": "chrome://connectors-internals"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.sentryclirc", "/home/alice/.supabase/access-token", "/home/alice/.config/op/config"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"X-Vault-Token": "forged-vault-hdr", "X-Consul-Token": "forged-consul"}}),
                 ],
                 start=29,
             ):
