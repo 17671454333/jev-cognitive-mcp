@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.4")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.5")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 125)
-        self.assertEqual(summary["matched"], 125)
+        self.assertEqual(summary["total"], 130)
+        self.assertEqual(summary["matched"], 130)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -802,6 +802,18 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("Target.createTarget", {"url": "chrome://connectors-internals"}),
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.sentryclirc", "/home/alice/.supabase/access-token", "/home/alice/.config/op/config"]}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"X-Vault-Token": "forged-vault-hdr", "X-Consul-Token": "forged-consul"}}),
+                    ("Target.attachToBrowserTarget", {}),
+                    ("Target.sendMessageToTarget", {"message": "{}"}),
+                    ("Storage.setSharedStorageEntry", {"key": "k", "value": "v"}),
+                    ("FedCm.confirmIdpLogin", {}),
+                    ("WebAuthn.setAutomaticPresenceSimulation", {"authenticatorId": "a1", "enabled": True}),
+                    ("Runtime.evaluate", {"expression": "cookieStore.set('sid', 'hijacked')"}),
+                    ("Runtime.evaluate", {"expression": "window.queryLocalFonts()"}),
+                    ("Page.navigate", {"url": "https://metadata.platformequinix.com/metadata"}),
+                    ("Target.createTarget", {"url": "http://[::ffff:169.254.170.2]/v2/metadata"}),
+                    ("Target.createTarget", {"url": "chrome://password-manager-internals"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.gemini/oauth_creds.json", "/home/alice/.rclone.conf", "/home/alice/.ngrok2/ngrok.yml"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"xi-api-key": "forged-xi-hdr", "X-Clerk-Secret-Key": "forged-clerk-hdr"}}),
                 ],
                 start=29,
             ):

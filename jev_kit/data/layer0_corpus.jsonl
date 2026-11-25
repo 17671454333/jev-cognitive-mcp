@@ -123,3 +123,8 @@
 {"id": "dest-49", "command": "aws secretsmanager delete-secret --secret-id prod/db/master --force-delete-without-recovery", "expected": "destructive_blocked"}
 {"id": "dest-50", "command": "vault secrets disable secret/production/", "expected": "destructive_blocked"}
 {"id": "safe-24", "command": "aws secretsmanager list-secrets --max-results 10", "expected": "pass_reflex"}
+{"id": "dlp-52", "command": "echo nfp_SYNTHETIC0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dlp-53", "command": "echo apify_api_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dest-51", "command": "wrangler r2 bucket delete prod-user-uploads", "expected": "destructive_blocked"}
+{"id": "dest-52", "command": "aws cloudformation delete-stack --stack-name prod-core-network", "expected": "destructive_blocked"}
+{"id": "safe-25", "command": "aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE", "expected": "pass_reflex"}
