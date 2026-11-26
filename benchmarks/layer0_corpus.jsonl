@@ -128,3 +128,8 @@
 {"id": "dest-51", "command": "wrangler r2 bucket delete prod-user-uploads", "expected": "destructive_blocked"}
 {"id": "dest-52", "command": "aws cloudformation delete-stack --stack-name prod-core-network", "expected": "destructive_blocked"}
 {"id": "safe-25", "command": "aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE", "expected": "pass_reflex"}
+{"id": "dlp-54", "command": "echo cfut_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-55", "command": "echo ATATT3xFfGF0SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dest-53", "command": "gcloud spanner instances delete prod-ledger-spanner --quiet", "expected": "destructive_blocked"}
+{"id": "dest-54", "command": "az cosmosdb delete --name prod-global-cosmos --resource-group rg-prod --yes", "expected": "destructive_blocked"}
+{"id": "safe-26", "command": "az cosmosdb list --output table", "expected": "pass_reflex"}

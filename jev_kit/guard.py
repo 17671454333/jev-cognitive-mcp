@@ -113,6 +113,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\bvault\s+secrets\s+disable\b"
     r"|\bwrangler\s+r2\s+bucket\s+delete\b"
     r"|\baws\s+cloudformation\s+delete-stack\b[^\r\n;|]*--stack-name\b"
+    r"|\bgcloud\s+spanner\s+instances\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
+    r"|\baz\s+cosmosdb\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
     r")"
 )
 

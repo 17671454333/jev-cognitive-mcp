@@ -42,6 +42,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.modal\.toml|\.s3cfg|\.vercel[/\\]auth\.json|"
     r"\.sentryclirc|\.supabase[/\\]access-token|\.config[/\\]op[/\\]config|"
     r"\.gemini[/\\](?:oauth_creds\.json|config[/\\]config\.json)|\.config[/\\]stripe[/\\]config\.toml|(?:\.ngrok2[/\\])?ngrok\.yml|\.?rclone\.conf|"
+    r"\.config[/\\]hub|\.dbt[/\\]profiles\.yml|\.git[/\\]config|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -54,16 +55,17 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals|topics-internals|private-aggregation-internals|connectors-internals|password-manager-internals|autofill-internals|download-internals|sandbox)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals|topics-internals|private-aggregation-internals|connectors-internals|password-manager-internals|autofill-internals|download-internals|sandbox|commerce-internals|family-link-user-internals|prefs-internals|web-app-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
     r"^https?://169\.254\.169\.254(?:/|$)|"
-    r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|169\.254\.169\.250|169\.254\.169\.253|169\.254\.42\.42|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
+    r"^https?://(?:169\.254\.170\.2|169\.254\.0\.23|169\.254\.169\.123|169\.254\.169\.250|169\.254\.169\.253|169\.254\.42\.42|168\.63\.129\.16|192\.0\.0\.192)(?:/|$)|"
     r"^https?://(?:2852039166|0xa9fea9fe|0xa9\.0xfe\.0xa9\.0xfe|0251\.0376\.0251\.0376|0251\.254\.169\.254)(?:/|$)|"
     r"^https?://(?:\[fd00:ec2::254\]|\[(?:0:0:0:0:0:ffff|::ffff):(?:169\.254\.169\.254|169\.254\.170\.2|a9fe:a9fe)\]|100\.100\.100\.200)(?:/|$)|"
     r"^https?://kubernetes\.default(?:\.svc(?:\.cluster\.local)?)?(?:/|$)|"
     r"^https?://rancher-metadata(?:\.rancher\.internal)?(?:/|$)|"
+    r"^https?://instance-data(?:\.ec2\.internal)?(?:/|$)|"
     r"^https?://metadata\.(?:packet\.net|platformequinix\.com)(?:/|$)|"
     r"^https?://metadata(?:\.(?:google\.internal|goog))?(?:/|$)"
     r")",
@@ -157,6 +159,10 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Storage.clearSharedStorageEntries",
     "FedCm.confirmIdpLogin",
     "WebAuthn.setAutomaticPresenceSimulation",
+    "Fetch.fulfillRequest",
+    "Fetch.continueRequest",
+    "FileSystem.getFile",
+    "Runtime.compileScript",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -202,7 +208,7 @@ _WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
 )
 
 _PRIVACY_SENSOR_EXPR_PATTERN = re.compile(
-    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\(|\bnavigator\.geolocation\.(?:getCurrentPosition|watchPosition)\s*\(|\bdocument\.requestStorageAccess(?:For)?\s*\(|\b(?:window\.)?queryLocalFonts\s*\("
+    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\(|\bnavigator\.geolocation\.(?:getCurrentPosition|watchPosition)\s*\(|\bdocument\.requestStorageAccess(?:For)?\s*\(|\b(?:window\.)?queryLocalFonts\s*\(|\b(?:window\.)?sharedStorage\.(?:set|append|delete|clear|run|selectURL)\s*\(|\bnavigator\.clipboard\.write(?:Text)?\s*\("
 )
 
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
@@ -215,6 +221,7 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "cookie",
     "proxy-authorization",
     "authorization",
+    "api-key",
     "x-api-key",
     "x-anthropic-api-key",
     "x-amz-security-token",
@@ -237,6 +244,8 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-clerk-secret-key",
     "x-pinecone-api-key",
     "x-meilisearch-api-key",
+    "x-hasura-admin-secret",
+    "x-postmark-server-token",
 })
 
 
