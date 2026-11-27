@@ -250,7 +250,7 @@ class TestJevCognitiveMcp(unittest.TestCase):
     def test_mcp_server_protocol_handlers(self):
         init_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
         self.assertEqual(init_resp["result"]["serverInfo"]["name"], "jev-cognitive-mcp")
-        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.6")
+        self.assertEqual(init_resp["result"]["serverInfo"]["version"], "0.5.7")
 
         tools_resp = handle_mcp_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {t["name"] for t in tools_resp["result"]["tools"]}
@@ -310,8 +310,8 @@ class TestJevCognitiveMcp(unittest.TestCase):
         self.assertEqual(repo_corpus.read_bytes(), pkg_corpus.read_bytes())
 
         summary = run_layer0_benchmark("benchmarks/layer0_corpus.jsonl")
-        self.assertEqual(summary["total"], 135)
-        self.assertEqual(summary["matched"], 135)
+        self.assertEqual(summary["total"], 140)
+        self.assertEqual(summary["matched"], 140)
         self.assertEqual(summary["accuracy"], 1.0)
         self.assertEqual(summary["mismatches"], [])
 
@@ -825,6 +825,18 @@ class TestJevCognitiveMcp(unittest.TestCase):
                     ("Target.createTarget", {"url": "chrome://prefs-internals"}),
                     ("DOM.setFileInputFiles", {"files": ["/home/alice/.dbt/profiles.yml", "/home/alice/.config/hub", "/srv/app/.git/config"]}),
                     ("Network.setExtraHTTPHeaders", {"headers": {"api-key": "forged-azure-openai", "X-Hasura-Admin-Secret": "forged-hasura"}}),
+                    ("Page.setInterceptFileChooserDialog", {"enabled": True}),
+                    ("Fetch.continueWithAuth", {"requestId": "req-auth", "authChallengeResponse": {"response": "ProvideCredentials"}}),
+                    ("Fetch.continueResponse", {"requestId": "req-resp", "responseCode": 200}),
+                    ("Storage.setProtectedAudienceKAnonymity", {"owner": "https://ad.example", "name": "campaign", "hashes": []}),
+                    ("Runtime.evaluate", {"expression": "navigator.identity.get({digital: {providers: []}})"}),
+                    ("Runtime.evaluate", {"expression": "window.documentPictureInPicture.requestWindow({width: 400, height: 300})"}),
+                    ("Runtime.evaluate", {"expression": "navigator.storageBuckets.open('stealth-vault')"}),
+                    ("Page.navigate", {"url": "http://metadata.tencentyun.com/latest/meta-data/"}),
+                    ("Page.navigate", {"url": "http://[fe80::a9fe:a9fe]/latest/meta-data/"}),
+                    ("Target.createTarget", {"url": "chrome://identity-internals"}),
+                    ("DOM.setFileInputFiles", {"files": ["/home/alice/.m2/settings.xml", "/home/alice/.gradle/gradle.properties", "/home/alice/.config/helm/registry/config.json"]}),
+                    ("Network.setExtraHTTPHeaders", {"headers": {"X-Telegram-Bot-Api-Secret-Token": "forged-tg", "X-Linear-Signature": "forged-linear"}}),
                 ],
                 start=29,
             ):

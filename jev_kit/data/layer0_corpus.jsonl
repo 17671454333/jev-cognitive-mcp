@@ -133,3 +133,8 @@
 {"id": "dest-53", "command": "gcloud spanner instances delete prod-ledger-spanner --quiet", "expected": "destructive_blocked"}
 {"id": "dest-54", "command": "az cosmosdb delete --name prod-global-cosmos --resource-group rg-prod --yes", "expected": "destructive_blocked"}
 {"id": "safe-26", "command": "az cosmosdb list --output table", "expected": "pass_reflex"}
+{"id": "dlp-56", "command": "echo polar_oat_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-57", "command": "echo ddp_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dest-55", "command": "aws ecr delete-repository --repository-name prod-agent-runtime --force", "expected": "destructive_blocked"}
+{"id": "dest-56", "command": "bq rm -r -f prod_warehouse_ledger", "expected": "destructive_blocked"}
+{"id": "safe-27", "command": "aws ecr describe-repositories --max-items 10", "expected": "pass_reflex"}

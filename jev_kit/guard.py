@@ -115,6 +115,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\baws\s+cloudformation\s+delete-stack\b[^\r\n;|]*--stack-name\b"
     r"|\bgcloud\s+spanner\s+instances\s+delete\b[^\r\n;|]*(?:--?quiet|-q)\b"
     r"|\baz\s+cosmosdb\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
+    r"|\baws\s+ecr\s+delete-repository\b[^\r\n;|]*--force\b"
+    r"|\bbq\s+rm\b[^\r\n;|]*(?:--recursive\b|-r\b)[^\r\n;|]*(?:--force\b|-f\b)"
     r")"
 )
 
