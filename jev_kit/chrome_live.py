@@ -44,6 +44,7 @@ _SENSITIVE_UPLOAD_FILE_PATTERN = re.compile(
     r"\.gemini[/\\](?:oauth_creds\.json|config[/\\]config\.json)|\.config[/\\]stripe[/\\]config\.toml|(?:\.ngrok2[/\\])?ngrok\.yml|\.?rclone\.conf|"
     r"\.config[/\\]hub|\.dbt[/\\]profiles\.yml|\.git[/\\]config|"
     r"\.m2[/\\]settings(?:-security)?\.xml|\.gradle[/\\]gradle\.properties|helm[/\\]registry[/\\]config\.json|"
+    r"pypoetry[/\\]auth\.toml|\.yarnrc|\.config[/\\]netlify[/\\]config\.json|"
     r"[^/\\]+\.(?:pem|key|pfx|p12|kdbx)"
     r")$",
     re.IGNORECASE,
@@ -56,7 +57,7 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^devtools://|"
     r"^view-source:file://|"
     r"^about:config|"
-    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals|topics-internals|private-aggregation-internals|connectors-internals|password-manager-internals|autofill-internals|download-internals|sandbox|commerce-internals|family-link-user-internals|prefs-internals|web-app-internals|identity-internals|certificate-manager)|"
+    r"^chrome://(?:settings/passwords|password-manager|omnibox|extensions|net-export|inspect|signin-internals|sync-internals|gcm-internals|local-state|indexeddb-internals|histograms|ukm|flags|webrtc-internals|usb-internals|bluetooth-internals|translate-internals|net-internals|quota-internals|process-internals|policy|device-log|media-internals|serviceworker-internals|app-service-internals|predictors|safe-browsing|attribution-internals|topics-internals|private-aggregation-internals|connectors-internals|password-manager-internals|autofill-internals|download-internals|sandbox|commerce-internals|family-link-user-internals|prefs-internals|web-app-internals|identity-internals|certificate-manager|management|on-device-internals|optimization-guide-internals)|"
     r"^(?:edge|brave)://(?:wallet|passwords|settings/passwords)|"
     r"^file://+(?:etc/(?:passwd|shadow)|windows/system32/config)|"
     r"^file://+.*?(?:User\s*Data|google-chrome|chromium).*?(?:Login\s*Data|Cookies|Local\s*State|Web\s*Data)|"
@@ -67,7 +68,7 @@ _FORBIDDEN_BROWSER_TARGET_PATTERN = re.compile(
     r"^https?://kubernetes\.default(?:\.svc(?:\.cluster\.local)?)?(?:/|$)|"
     r"^https?://rancher-metadata(?:\.rancher\.internal)?(?:/|$)|"
     r"^https?://instance-data(?:\.ec2\.internal)?(?:/|$)|"
-    r"^https?://metadata\.(?:packet\.net|platformequinix\.com|tencentyun\.com|azure\.com)(?:/|$)|"
+    r"^https?://metadata\.(?:packet\.net|platformequinix\.com|tencentyun\.com|azure\.com|hetzner\.cloud|vultr\.com)(?:/|$)|"
     r"^https?://metadata(?:\.(?:google\.internal|goog))?(?:/|$)"
     r")",
     re.IGNORECASE,
@@ -168,6 +169,11 @@ _BULK_COOKIE_DUMP_METHODS = frozenset({
     "Fetch.continueWithAuth",
     "Fetch.continueResponse",
     "Storage.setProtectedAudienceKAnonymity",
+    "Page.createIsolatedWorld",
+    "Preload.enable",
+    "WebAudio.enable",
+    "Overlay.setInspectMode",
+    "Storage.setAttributionReportingLocalTestingMode",
 })
 
 _COOKIE_EXFIL_EXPR_PATTERN = re.compile(
@@ -213,7 +219,7 @@ _WEBRTC_PUSH_EXFIL_EXPR_PATTERN = re.compile(
 )
 
 _PRIVACY_SENSOR_EXPR_PATTERN = re.compile(
-    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\(|\bnavigator\.geolocation\.(?:getCurrentPosition|watchPosition)\s*\(|\bdocument\.requestStorageAccess(?:For)?\s*\(|\b(?:window\.)?queryLocalFonts\s*\(|\b(?:window\.)?sharedStorage\.(?:set|append|delete|clear|run|selectURL)\s*\(|\bnavigator\.clipboard\.write(?:Text)?\s*\(|\b(?:window\.)?documentPictureInPicture\.requestWindow\s*\(|\bnavigator\.storageBuckets\.(?:open|delete)\s*\("
+    r"(?is)\bnew\s+(?:EyeDropper|NDEFReader|IdleDetector|SharedWorker|PresentationRequest)\s*\(|\bnavigator\.contacts\.select\s*\(|\b(?:window\.)?getScreenDetails\s*\(|\bnavigator\.geolocation\.(?:getCurrentPosition|watchPosition)\s*\(|\bdocument\.requestStorageAccess(?:For)?\s*\(|\b(?:window\.)?queryLocalFonts\s*\(|\b(?:window\.)?sharedStorage\.(?:set|append|delete|clear|run|selectURL)\s*\(|\bnavigator\.clipboard\.write(?:Text)?\s*\(|\b(?:window\.)?documentPictureInPicture\.requestWindow\s*\(|\bnavigator\.storageBuckets\.(?:open|delete)\s*\(|\bnavigator\.wakeLock\.request\s*\(|\bnavigator\.keyboard\.lock\s*\(|\b(?:window\.)?launchQueue\.setConsumer\s*\("
 )
 
 _FORBIDDEN_DOWNLOAD_PATH_PATTERN = re.compile(
@@ -253,6 +259,9 @@ _FORBIDDEN_EXTRA_HEADER_NAMES = frozenset({
     "x-postmark-server-token",
     "x-telegram-bot-api-secret-token",
     "x-linear-signature",
+    "x-exa-api-key",
+    "x-deepgram-api-key",
+    "x-webhook-secret",
 })
 
 

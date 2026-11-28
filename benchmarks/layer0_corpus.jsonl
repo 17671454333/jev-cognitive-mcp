@@ -138,3 +138,8 @@
 {"id": "dest-55", "command": "aws ecr delete-repository --repository-name prod-agent-runtime --force", "expected": "destructive_blocked"}
 {"id": "dest-56", "command": "bq rm -r -f prod_warehouse_ledger", "expected": "destructive_blocked"}
 {"id": "safe-27", "command": "aws ecr describe-repositories --max-items 10", "expected": "pass_reflex"}
+{"id": "dlp-58", "command": "echo tgp_v1_SYNTHETIC0123456789abcdefghijklmnopqr", "expected": "sensitive_rejected"}
+{"id": "dlp-59", "command": "echo vck_SYNTHETIC0123456789abcdefghijklmnopqrstuv", "expected": "sensitive_rejected"}
+{"id": "dest-57", "command": "neonctl projects delete prod-postgres-main --force", "expected": "destructive_blocked"}
+{"id": "dest-58", "command": "aws opensearch delete-domain --domain-name prod-search-cluster", "expected": "destructive_blocked"}
+{"id": "safe-28", "command": "aws opensearch list-domain-names", "expected": "pass_reflex"}

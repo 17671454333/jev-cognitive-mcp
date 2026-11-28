@@ -117,6 +117,8 @@ _DESTRUCTIVE_REFLEX_PATTERN = re.compile(
     r"|\baz\s+cosmosdb\s+delete\b[^\r\n;|]*(?:--?yes|-y)\b"
     r"|\baws\s+ecr\s+delete-repository\b[^\r\n;|]*--force\b"
     r"|\bbq\s+rm\b[^\r\n;|]*(?:--recursive\b|-r\b)[^\r\n;|]*(?:--force\b|-f\b)"
+    r"|\bneon(?:ctl)?\s+projects\s+delete\b"
+    r"|\baws\s+opensearch\s+delete-domain\b[^\r\n;|]*--domain-name\b"
     r")"
 )
 
